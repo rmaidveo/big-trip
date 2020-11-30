@@ -1,5 +1,19 @@
 import dayjs from "dayjs";
-import {TYPES} from "../constants.js";
+import {TYPES, CITIES, OFFERS, DESCRIPTIONS} from "../constants.js";
+import {createElement} from "../utils.js";
+
+const BLANK_TRIP = {
+  start: dayjs().format(`DD/MM/YY HH:MM`),
+  end: dayjs().format(`DD/MM/YY HH:MM`),
+  type: TYPES[0],
+  offers: {
+    title: OFFERS[0],
+    price: 0
+  },
+  city: CITIES[0],
+  cost: 0,
+  destination: DESCRIPTIONS[0]
+};
 
 const createEventTypeItemsTemplate = () => {
   return TYPES.map((type) => `<div class="event__type-item">
@@ -45,17 +59,8 @@ const renderPhotos = (photos) => {
   return photo;
 };
 
-export const createFormNewPointOfTripTemplate = (trip = {}) => {
-  const {
-    start = dayjs().format(`DD/MM/YY HH:MM`),
-    end = dayjs().format(`DD/MM/YY HH:MM`),
-    type,
-    offers,
-    city,
-    cost,
-    destination
-  } = trip;
-
+const createFormNewPointOfTripTemplate = (trip) => {
+  const {start, end, type, offers, city, cost, destination} = trip;
   const starts = dayjs(start).format(`DD/MM/YY HH:MM`);
   const ends = dayjs(end).format(`DD/MM/YY HH:MM`);
   const destDescript = destination.description.join(` `);
@@ -117,3 +122,26 @@ export const createFormNewPointOfTripTemplate = (trip = {}) => {
 </form>
 </li> `;
 };
+export default class NewTrip {
+
+  constructor(trip = BLANK_TRIP) {
+    this._element = null;
+    this._trip = trip;
+  }
+
+  getTemplate() {
+    return createFormNewPointOfTripTemplate(this._trip);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

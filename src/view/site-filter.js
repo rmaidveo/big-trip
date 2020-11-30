@@ -1,3 +1,4 @@
+import {createElement} from "../utils.js";
 const createFilterItemsTemplate = (filter, isChecked) => {
   const {
     name,
@@ -15,7 +16,8 @@ const createFilterItemsTemplate = (filter, isChecked) => {
     for="filter-${name}">${name}</label>
   </div>`;
 };
-export const createSiteFilterTemplate = (filterItems) => {
+
+const createSiteFilterTemplate = (filterItems) => {
   const filterItemsTemplate = filterItems
     .map((filter, index) => createFilterItemsTemplate(filter, index === 0))
     .join(``);
@@ -24,3 +26,26 @@ export const createSiteFilterTemplate = (filterItems) => {
   <button class="visually-hidden" type="submit">Accept filter</button>
   </form>`;
 };
+export default class SiteFilter {
+
+  constructor(filters) {
+    this._element = null;
+    this._filters = filters;
+  }
+
+  getTemplate() {
+    return createSiteFilterTemplate(this._filters);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
