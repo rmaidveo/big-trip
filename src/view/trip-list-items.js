@@ -1,15 +1,22 @@
 import dayjs from "dayjs";
-import {TIME_IN_MIN} from "../constants.js";
+import {createElement, getAllCost} from "../utils.js";
+import {TIME_IN_MIN, TYPES, CITIES, OFFERS, DESCRIPTIONS} from "../constants.js";
+
+const BLANK_TRIP = {
+  start: dayjs().format(`DD/MM/YY HH:MM`),
+  end: dayjs().format(`DD/MM/YY HH:MM`),
+  type: TYPES[0],
+  offers: {
+    title: OFFERS[0],
+    price: 0
+  },
+  city: CITIES[0],
+  cost: 0,
+  destination: DESCRIPTIONS[0],
+  isFavorite: false
+};
 
 const appendZero = (value) => String(value).padStart(2, `0`);
-
-const getAllCost = (cost, offers) => {
-  let allcost = cost;
-  for (let i = 0; i < offers.price.length; i++) {
-    allcost += offers.price[i];
-  }
-  return allcost;
-};
 
 const createDuration = (duration) => {
   let durationString = ``;
@@ -47,17 +54,8 @@ const createOffers = (offers) => {
   return listOfOffers;
 };
 
-export const createTripEventsListItemTemplate = (trip) => {
-  const {
-    start,
-    type,
-    city,
-    duration,
-    cost,
-    end,
-    offers,
-    isFavorite
-  } = trip;
+const createTripEventsListItemTemplate = (trip) => {
+  const {start, type, city, duration, cost, end, offers, isFavorite} = trip;
   const date = dayjs(start).format(`MMM DD`);
   const timeStart = dayjs(start).format(`HH:mm`);
   const timeEnd = dayjs(end).format(`HH:mm`);
@@ -100,3 +98,26 @@ export const createTripEventsListItemTemplate = (trip) => {
   </div>
 </li>`;
 };
+export default class TripListItems {
+
+  constructor(trip = BLANK_TRIP) {
+    this._element = null;
+    this._trip = trip;
+  }
+
+  getTemplate() {
+    return createTripEventsListItemTemplate(this._trip);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
