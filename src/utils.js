@@ -48,5 +48,5 @@ export const createElement = (template) => {
 };
 
 export const sortByField = (field) => {
-  return (a, b) => a[field] > b[field] ? 1 : -1;
+  return (a, b) => b[field] > a[field] ? 1 : -1;
 };

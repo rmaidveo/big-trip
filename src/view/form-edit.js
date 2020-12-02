@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import {TYPES, CITIES, OFFERS, DESCRIPTIONS} from "../constants.js";
+import {TYPES, CITIES, OFFERS} from "../constants.js";
 import {createElement} from "../utils.js";
 
 const BLANK_TRIP = {
@@ -12,7 +12,10 @@ const BLANK_TRIP = {
   },
   city: CITIES[0],
   cost: 0,
-  destination: DESCRIPTIONS[0]
+  destination: {
+    description: [],
+    photos: []
+  }
 };
 
 const createEventTypeItemsTemplate = () => {
@@ -40,7 +43,7 @@ const renderOffersInTrip = (offers) => {
   let offer = ``;
   for (let i = 0; i < offers.title.length; i++) {
     offer += `<div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage">
+          <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
           <label class="event__offer-label" for="event-offer-luggage-1">
             <span class="event__offer-title">${offers.title[i]}</span>
             &plus;&euro;&nbsp;
@@ -122,7 +125,6 @@ const createFormEditPointOfTripTemplate = (trip) => {
 </li> `;
 };
 export default class EditTrip {
-
   constructor(trip = BLANK_TRIP) {
     this._element = null;
     this._trip = trip;
