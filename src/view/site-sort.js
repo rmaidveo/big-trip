@@ -26,7 +26,6 @@ ${sortItemsTemplate}
 
 };
 export default class SiteSort {
-
   constructor(sorts) {
     this._element = null;
     this._sorts = sorts;

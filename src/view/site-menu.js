@@ -7,7 +7,6 @@ const createSiteMenuTemplate = () => {
 </nav>`;
 };
 export default class SiteMenu {
-
   constructor() {
     this._element = null;
   }

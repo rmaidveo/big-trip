@@ -99,7 +99,6 @@ const createTripEventsListItemTemplate = (trip) => {
 </li>`;
 };
 export default class TripListItems {
-
   constructor(trip = BLANK_TRIP) {
     this._element = null;
     this._trip = trip;

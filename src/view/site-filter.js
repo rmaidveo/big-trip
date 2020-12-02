@@ -11,7 +11,7 @@ const createFilterItemsTemplate = (filter, isChecked) => {
     name="trip-filter"
     value = "${name}"
      ${isChecked ? `checked` : ``}
-  ${count === 0 ? `disabled` : ``}>
+  ${count === 0 && name !== `everything` ? `disabled` : ``}>
     <label class="trip-filters__filter-label"
     for="filter-${name}">${name}</label>
   </div>`;
@@ -27,7 +27,6 @@ const createSiteFilterTemplate = (filterItems) => {
   </form>`;
 };
 export default class SiteFilter {
-
   constructor(filters) {
     this._element = null;
     this._filters = filters;

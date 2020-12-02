@@ -30,10 +30,7 @@ const createTripInfoTemplate = (trip) => {
 </p>
 </section>`;
 };
-
-
 export default class TripInfo {
-
   constructor(trip = BLANK_TRIP) {
     this._element = null;
     this._trip = trip;

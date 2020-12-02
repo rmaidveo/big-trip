@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import {TYPES, CITIES, OFFERS, DESCRIPTIONS} from "../constants.js";
+import {TYPES, CITIES, OFFERS} from "../constants.js";
 import {createElement} from "../utils.js";
 
 const BLANK_TRIP = {
@@ -7,12 +7,15 @@ const BLANK_TRIP = {
   end: dayjs().format(`DD/MM/YY HH:MM`),
   type: TYPES[0],
   offers: {
-    title: OFFERS[0],
-    price: 0
+    title: [OFFERS[0]],
+    price: [0]
   },
   city: CITIES[0],
   cost: 0,
-  destination: DESCRIPTIONS[0]
+  destination: {
+    description: [],
+    photos: []
+  }
 };
 
 const createEventTypeItemsTemplate = () => {
@@ -123,7 +126,6 @@ const createFormNewPointOfTripTemplate = (trip) => {
 </li> `;
 };
 export default class NewTrip {
-
   constructor(trip = BLANK_TRIP) {
     this._element = null;
     this._trip = trip;

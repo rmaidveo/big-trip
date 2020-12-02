@@ -1,18 +1,18 @@
 import {sortByField} from "../utils.js";
 
 const tripToSortMap = {
-  day: (events) => Array.from(events.sort(sortByField(`start`))).length,
-  event: (events) => events.length,
-  time: (events) => Array.from(events.sort(sortByField(`duration`))).length,
-  price: (events) => Array.from(events.sort(sortByField(`cost`))).length,
-  offers: (events) => events.length
+  day: (events) => events,
+  event: (events) => events,
+  time: (events) => Array.from(events.sort(sortByField(`duration`))),
+  price: (events) => Array.from(events.sort(sortByField(`cost`))),
+  offers: (events) => events
 };
 
 export const generateSort = (events) => {
   return Object.entries(tripToSortMap).map(([sortName, countTrips]) => {
     return {
       name: sortName,
-      count: countTrips(events)
+      count: countTrips(events).length
     };
   });
 };
