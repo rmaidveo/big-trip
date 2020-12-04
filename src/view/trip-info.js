@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
+import AbstractView from "./abstract.js";
 import {CITIES, OFFERS} from "../constants.js";
-import {createElement, getAllCost} from "../utils.js";
+import {getAllCost} from "../utils/trip.js";
 
 const BLANK_TRIP = {
   start: dayjs().format(`MMM DD`),
@@ -30,25 +31,13 @@ const createTripInfoTemplate = (trip) => {
 </p>
 </section>`;
 };
-export default class TripInfo {
+export default class TripInfo extends AbstractView {
   constructor(trip = BLANK_TRIP) {
-    this._element = null;
+    super();
     this._trip = trip;
   }
 
   getTemplate() {
     return createTripInfoTemplate(this._trip);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

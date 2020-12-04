@@ -1,4 +1,4 @@
-import {createElement} from "../utils.js";
+import AbstractView from "./abstract.js";
 const createSortItemsTemplate = (sort, isChecked) => {
   const {
     name,
@@ -25,25 +25,13 @@ ${sortItemsTemplate}
 </form>`;
 
 };
-export default class SiteSort {
+export default class SiteSort extends AbstractView {
   constructor(sorts) {
-    this._element = null;
+    super();
     this._sorts = sorts;
   }
 
   getTemplate() {
     return createSortTripTemplate(this._sorts);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

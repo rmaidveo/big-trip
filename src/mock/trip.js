@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import {TYPES, CITIES, COST, OFFERS, DESCRIPTIONS} from "../constants.js";
-import {getRandomInteger} from "../utils.js";
+import {getRandomInteger} from "../utils/common.js";
 
 const generateType = () => {
   const randomIndex = getRandomInteger(0, TYPES.length - 1);

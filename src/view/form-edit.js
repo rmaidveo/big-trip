@@ -1,6 +1,6 @@
+import AbstractView from "./abstract.js";
 import dayjs from "dayjs";
 import {TYPES, CITIES, OFFERS} from "../constants.js";
-import {createElement} from "../utils.js";
 
 const BLANK_TRIP = {
   start: dayjs().format(`DD/MM/YY HH:MM`),
@@ -124,25 +124,35 @@ const createFormEditPointOfTripTemplate = (trip) => {
 </form>
 </li> `;
 };
-export default class EditTrip {
+export default class EditTrip extends AbstractView {
   constructor(trip = BLANK_TRIP) {
-    this._element = null;
+    super();
     this._trip = trip;
+    this._onClickTripEdit = this._onClickTripEdit.bind(this);
+    this._onFormSubmitSave = this._onFormSubmitSave.bind(this);
   }
 
   getTemplate() {
     return createFormEditPointOfTripTemplate(this._trip);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _onClickTripEdit(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
   }
 
-  removeElement() {
-    this._element = null;
+  setOnClickTripEdit(callback) {
+    this._callback.editClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._onClickTripEdit);
+  }
+
+  _onFormSubmitSave(evt) {
+    evt.preventDefault();
+    this._callback.submitClick();
+  }
+
+  setOnFormSubmitSave(callback) {
+    this._callback.submitClick = callback;
+    this.getElement().querySelector(`form`).addEventListener(`submit`, this._onFormSubmitSave);
   }
 }
