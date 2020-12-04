@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import {TYPES, CITIES, OFFERS} from "../constants.js";
-import {createElement} from "../utils.js";
+import AbstractView from "./abstract.js";
 
 const BLANK_TRIP = {
   start: dayjs().format(`DD/MM/YY HH:MM`),
@@ -125,25 +125,13 @@ const createFormNewPointOfTripTemplate = (trip) => {
 </form>
 </li> `;
 };
-export default class NewTrip {
+export default class NewTrip extends AbstractView {
   constructor(trip = BLANK_TRIP) {
-    this._element = null;
+    super();
     this._trip = trip;
   }
 
   getTemplate() {
     return createFormNewPointOfTripTemplate(this._trip);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

@@ -1,4 +1,4 @@
-import {sortByField} from "../utils.js";
+import {sortByField} from "../utils/trip.js";
 
 const tripToSortMap = {
   day: (events) => events,

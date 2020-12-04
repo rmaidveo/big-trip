@@ -1,4 +1,4 @@
-import {isTripPlanned, isTripExpired} from "../utils.js";
+import {isTripPlanned, isTripExpired} from "../utils/trip.js";
 
 const tripToFilterMap = {
   everything: (events) => events.length,
