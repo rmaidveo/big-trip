@@ -103,6 +103,7 @@ export default class TripListItems extends AbstractView {
   constructor(trip = BLANK_TRIP) {
     super();
     this._trip = trip;
+    this._onFavoriteClick = this._onFavoriteClick.bind(this);
     this._onClickTripPoint = this._onClickTripPoint.bind(this);
   }
 
@@ -110,13 +111,25 @@ export default class TripListItems extends AbstractView {
     return createTripEventsListItemTemplate(this._trip);
   }
 
+  _onFavoriteClick(evt) {
+    evt.preventDefault();
+    this._callback.favoriteClick();
+  }
+
+
   _onClickTripPoint(evt) {
     evt.preventDefault();
     this._callback.pointClick();
+  }
+
+  setOnFavoriteClick(callback) {
+    this._callback.favoriteClick = callback;
+    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._onFavoriteClick);
   }
 
   setOnClickTripPoint(callback) {
     this._callback.pointClick = callback;
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._onClickTripPoint);
   }
+
 }

@@ -138,7 +138,7 @@ export default class EditTrip extends AbstractView {
 
   _onClickTripEdit(evt) {
     evt.preventDefault();
-    this._callback.editClick();
+    this._callback.editClick(this._trip);
   }
 
   setOnClickTripEdit(callback) {
@@ -148,7 +148,7 @@ export default class EditTrip extends AbstractView {
 
   _onFormSubmitSave(evt) {
     evt.preventDefault();
-    this._callback.submitClick();
+    this._callback.submitClick(this._trip);
   }
 
   setOnFormSubmitSave(callback) {
