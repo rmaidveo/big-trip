@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import {nanoid} from 'nanoid';
 import {TYPES, CITIES, COST, OFFERS, DESCRIPTIONS} from "../constants.js";
 import {getRandomInteger} from "../utils/common.js";
+import {getAllCost} from "../utils/trip.js";
 
 const generateType = () => {
   const randomIndex = getRandomInteger(0, TYPES.length - 1);
@@ -69,6 +70,7 @@ export const generateTrip = () => {
   const duration = generateDuration(start, end);
   const cost = getRandomInteger(COST.MIN, COST.MAX);
   const offers = generateOffers();
+  const total = getAllCost(cost, offers);
 
   return {
     id: nanoid(),
@@ -79,6 +81,7 @@ export const generateTrip = () => {
     end,
     cost,
     offers,
+    total,
     destination: {
       description: generateDescriptions(),
       photos: [

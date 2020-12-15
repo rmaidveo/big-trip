@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import AbstractView from "./abstract.js";
-import {getAllCost} from "../utils/trip.js";
 import {TIME_IN_MIN, TYPES, CITIES, OFFERS, DESCRIPTIONS} from "../constants.js";
 
 const BLANK_TRIP = {
@@ -13,6 +12,7 @@ const BLANK_TRIP = {
   },
   city: CITIES[0],
   cost: 0,
+  total: 0,
   destination: DESCRIPTIONS[0],
   isFavorite: false
 };
@@ -56,14 +56,14 @@ const createOffers = (offers) => {
 };
 
 const createTripEventsListItemTemplate = (trip) => {
-  const {start, type, city, duration, cost, end, offers, isFavorite} = trip;
+  const {start, type, city, duration, end, offers, isFavorite, total} = trip;
   const date = dayjs(start).format(`MMM DD`);
   const timeStart = dayjs(start).format(`HH:mm`);
   const timeEnd = dayjs(end).format(`HH:mm`);
   const favorite = isFavorite ? `event__favorite-btn--active` : ``;
   const durationStrings = createDuration(duration);
   const offer = createOffers(offers);
-  const allCost = getAllCost(cost, offers);
+
 
   return `<li class="trip-events__item">
   <div class="event">
@@ -81,7 +81,7 @@ const createTripEventsListItemTemplate = (trip) => {
       <p class="event__duration"> ${durationStrings}</p>
     </div>
     <p class="event__price">
-      &euro;&nbsp;<span class="event__price-value">${allCost}</span>
+      &euro;&nbsp;<span class="event__price-value">${total}</span>
     </p>
     <h4 class="visually-hidden">Offers:</h4>
     <ul class="event__selected-offers">

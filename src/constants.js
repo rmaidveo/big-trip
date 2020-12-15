@@ -54,3 +54,11 @@ export const TIME_IN_MIN = {
   DAY: 24,
   HOUR: 60
 };
+
+export const SortType = {
+  DEFAULT: `day`,
+  EVENT: `event`,
+  TIME: `time`,
+  PRICE: `price`,
+  OFFERS: `offers`
+};
