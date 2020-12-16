@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+
 export const getAllCost = (cost, offers) => {
   let allcost = cost;
   for (let i = 0; i < offers.price.length; i++) {
@@ -17,4 +18,16 @@ export const isTripExpired = (date) => {
 
 export const sortByField = (field) => {
   return (a, b) => b[field] > a[field] ? 1 : -1;
+};
+
+export const sortByPrice = () => {
+  return (a, b) => b[`total`] > a[`total`] ? 1 : -1;
+};
+
+export const sortByTime = () => {
+  return (a, b) => b[`duration`] > a[`duration`] ? 1 : -1;
+};
+
+export const sortByDay = () => {
+  return (a, b) => dayjs(a[`start`]).isAfter(b[`start`]) > dayjs(b[`start`]).isAfter(a[`start`]) ? 1 : -1;
 };
