@@ -1,6 +1,7 @@
-import AbstractView from "./abstract.js";
+import SmartView from "./smart.js";
 import dayjs from "dayjs";
 import {TYPES, CITIES, OFFERS} from "../constants.js";
+import {CITY} from "../mock/trip.js";
 
 const BLANK_TRIP = {
   start: dayjs().format(`DD/MM/YY HH:MM`),
@@ -18,80 +19,118 @@ const BLANK_TRIP = {
   }
 };
 
-const createEventTypeItemsTemplate = () => {
-  return TYPES.map((type) => `<div class="event__type-item">
-            <input id="event-type-${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type.toLowerCase()}">
+const createEventTypeItemsTemplate = (currentType) => {
+  const types = TYPES.map((type) => `<div class="event__type-item">
+            <input id="event-type-${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type.toLowerCase()}"
+             ${currentType === type ? `checked` : ``}>
             <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-1">${type}</label>
           </div>`).join(``);
-};
-const createEventTypeItems = createEventTypeItemsTemplate();
 
-const createEventTypeListItemsTemplate = (type) => {
-  return `<label class="event__type  event__type-btn" for="event-type-toggle-1">
+  return `
+  <div class="event__type-wrapper">
+  <label class="event__type  event__type-btn" for="event-type-toggle-1">
         <span class="visually-hidden">Choose event type</span>
-        <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
+        <img class = "event__type-icon"
+        width = "17"
+        height = "17"
+        src = "img/icons/${currentType}.png"
+        alt = "Event type icon">
       </label>
       <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
-      <div class="event__type-list">
-        <fieldset class="event__type-group">
-          <legend class="visually-hidden">Event type</legend>
-${createEventTypeItems}
-        </fieldset>
-      </div>`;
+    <div class="event__type-list">
+    <fieldset class="event__type-group">
+     <legend class="visually-hidden">Event type</legend>
+${types}
+         </fieldset>
+                    </div>
+                  </div>`;
 };
+
 const renderOffersInTrip = (offers) => {
-  let offer = ``;
-  for (let i = 0; i < offers.title.length; i++) {
+  let offer = ` `;
+  const {title, price} = offers;
+
+  for (let i = 0; i < title.length; i++) {
     offer += `<div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-          <label class="event__offer-label" for="event-offer-luggage-1">
-            <span class="event__offer-title">${offers.title[i]}</span>
+          <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" type="checkbox" name="event-offer-luggage" checked>
+          <label class="event__offer-label" for="event-offer-luggage-${i}">
+            <span class="event__offer-title">${title[i]}</span>
             &plus;&euro;&nbsp;
-            <span class="event__offer-price">${offers.price[i]}</span>
+            <span class="event__offer-price">${price[i]}</span>
           </label>
         </div>`;
   }
+  if (title.length > 0) {
+    return ` <section class="event__section  event__section--offers">
+    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+    <div class="event__available-offers">
+    ${offer}
+    </div>
+    </section>`;
+  }
   return offer;
 };
+
 const renderPhotos = (photos) => {
-  let photo = ``;
-  for (let i = 0; i < photos.length; i++) {
-    photo += ` <img class="event__photo" src="${photos[i]}" alt="Event photo">`;
+  let photoTemplate = photos.map((photo) =>
+    `<img class="event__photo" src="${photo}" alt="Event photo">`).join(``);
+  if (photos.length > 0) {
+    return `<div class="event__photos-container">
+        <div class="event__photos-tape">
+        ${photoTemplate}
+          </div>
+      </div>`;
   }
-  return photo;
+  return ` `;
+
+};
+
+const renderDescript = (destination) => {
+  const {
+    description,
+    photos
+  } = destination;
+  const destinationPhotos = renderPhotos(photos);
+  if (description.length > 0) {
+    return `<section class="event__section  event__section--destination">
+    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+    <p class="event__destination-description"> ${description.join(` `)} </p>
+          ${destinationPhotos}
+    </section>`;
+  }
+  return ` `;
 };
 
 const createFormEditPointOfTripTemplate = (trip) => {
-  const {start, end, type, offers, city, cost, destination} = trip;
+  const {
+    start,
+    end,
+    type,
+    offers,
+    city,
+    cost,
+    destination
+  } = trip;
   const starts = dayjs(start).format(`DD/MM/YY HH:MM`);
   const ends = dayjs(end).format(`DD/MM/YY HH:MM`);
-  const destDescript = destination.description.join(` `);
-  const destinationPhotos = renderPhotos(destination.photos);
-  const destinationDescription = destination.description === 0 && destinationPhotos.length === 0 ? `` :
-    `<section class="event__section  event__section--destination">
-    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description"> ${destDescript} </p>
-      <div class="event__photos-container">
-        <div class="event__photos-tape">
-          ${destinationPhotos}
-        </div>
-      </div>
-    </section>`;
-
-  const eventsType = createEventTypeListItemsTemplate(type);
+  const destinationDescription = renderDescript(destination);
+  const eventsType = createEventTypeItemsTemplate(type);
   const offersList = renderOffersInTrip(offers);
 
   return `<li class="trip-events__item"><form class="event event--edit" action="#" method="post">
 <header class="event__header">
-  <div class="event__type-wrapper">
+
   ${eventsType}
-  </div>
-  <div class="event__field-group  event__field-group--destination">
-    <label class="event__label  event__type-output" for="event-destination-1">
-     ${type}
-    </label>
-    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${city}" list="destination-list-1">
-  </div>
+
+     <div class="event__field-group  event__field-group--destination">
+                    <label class="event__label  event__type-output" for="event-destination-1">
+                     ${type}
+                    </label>
+                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${city}" list="destination-list-1">
+                    <datalist id="destination-list-1">
+                      <option value="${type}"></option>
+                    </datalist>
+                  </div>
   <div class="event__field-group  event__field-group--time">
     <label class="visually-hidden" for="event-start-time-1">From</label>
     <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${starts}">
@@ -113,32 +152,35 @@ const createFormEditPointOfTripTemplate = (trip) => {
   </button>
 </header>
 <section class="event__details">
-  <section class="event__section  event__section--offers">
-    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-    <div class="event__available-offers">
     ${offersList}
-    </div>
-    </section>
     ${destinationDescription}
-</section>
 </form>
 </li> `;
 };
-export default class EditTrip extends AbstractView {
+export default class EditTrip extends SmartView {
   constructor(trip = BLANK_TRIP) {
     super();
-    this._trip = trip;
+    this._data = EditTrip.parseTripToData(trip);
     this._onClickTripEdit = this._onClickTripEdit.bind(this);
     this._onFormSubmitSave = this._onFormSubmitSave.bind(this);
+    this._onTypeOfTripClick = this._onTypeOfTripClick.bind(this);
+    this._onDestinationInputChange = this._onDestinationInputChange.bind(this);
+    this._setInnerHandlers();
+  }
+
+  reset(trip) {
+    this.updateData(
+        EditTrip.parseTripToData(trip)
+    );
   }
 
   getTemplate() {
-    return createFormEditPointOfTripTemplate(this._trip);
+    return createFormEditPointOfTripTemplate(this._data);
   }
 
   _onClickTripEdit(evt) {
     evt.preventDefault();
-    this._callback.editClick(this._trip);
+    this._callback.editClick(EditTrip.parseDataToTrip(this._data));
   }
 
   setOnClickTripEdit(callback) {
@@ -148,11 +190,54 @@ export default class EditTrip extends AbstractView {
 
   _onFormSubmitSave(evt) {
     evt.preventDefault();
-    this._callback.submitClick(this._trip);
+    this._callback.submitClick(EditTrip.parseDataToTrip(this._data));
   }
 
   setOnFormSubmitSave(callback) {
     this._callback.submitClick = callback;
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._onFormSubmitSave);
+  }
+
+  restoreHandlers() {
+    this._setInnerHandlers();
+    this.setOnFormSubmitSave(this._callback.submitClick);
+    this.setOnClickTripEdit(this._callback.editClick);
+  }
+
+  _onTypeOfTripClick(evt) {
+    evt.preventDefault();
+    this.updateData({
+      type: evt.target.value
+    });
+  }
+
+  _onDestinationInputChange(evt) {
+    const newCity = evt.target.value;
+    Object.assign({},
+        this._data.destination,
+        this._data.city,
+        this._data.city = newCity,
+        this._data.destination.description = CITY[newCity][0],
+        this._data.destination.photos = CITY[newCity][1]);
+    this.updateData(
+        this._data.city,
+        this._data.destination
+    );
+  }
+
+  _setInnerHandlers() {
+    this.getElement()
+      .querySelector(`.event__type-group`)
+      .addEventListener(`change`, this._onTypeOfTripClick);
+    this.getElement()
+      .querySelector(`.event__input--destination`)
+      .addEventListener(`change`, this._onDestinationInputChange);
+  }
+  static parseTripToData(trip) {
+    return JSON.parse(JSON.stringify(trip));
+  }
+
+  static parseDataToTrip(data) {
+    return JSON.parse(JSON.stringify(data));
   }
 }

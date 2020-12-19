@@ -20,7 +20,10 @@ export const CITIES = [
   `Barcelona`,
   `Madrid`,
   `Lisbon`,
-  `Riga`
+  `Riga`,
+  `Kaliningrad`,
+  `Morio`,
+  `Konoha`
 ];
 export const OFFERS = [
   `Add luggage`,

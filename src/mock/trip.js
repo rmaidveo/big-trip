@@ -1,19 +1,13 @@
 import dayjs from "dayjs";
 import {nanoid} from 'nanoid';
-import {TYPES, CITIES, COST, OFFERS, DESCRIPTIONS} from "../constants.js";
-import {getRandomInteger} from "../utils/common.js";
+import {TYPES, COST, OFFERS, DESCRIPTIONS} from "../constants.js";
+import {getRandomInteger, getRandomElement} from "../utils/common.js";
 import {getAllCost} from "../utils/trip.js";
 
 const generateType = () => {
   const randomIndex = getRandomInteger(0, TYPES.length - 1);
   return TYPES[randomIndex];
 };
-
-const generateCity = () => {
-  const randomIndex = getRandomInteger(0, CITIES.length - 1);
-  return CITIES[randomIndex];
-};
-
 const generateOffers = () => {
   const randomLength = getRandomInteger(0, OFFERS.length - 1);
   let title = [];
@@ -32,7 +26,7 @@ const generateOffers = () => {
   };
 };
 
-const generateDescriptions = () => {
+export const generateDescriptions = () => {
   const randomLength = getRandomInteger(1, 5);
   let description = [];
   for (let i = 0; i < randomLength; i++) {
@@ -64,6 +58,30 @@ const generateEndTime = (date) => {
   return dayjs(date).add(maxGap.hours, `hours`).add(maxGap.minute, `minute`).toDate();
 };
 
+const getRandomPhotos = () => {
+  const photos = [];
+  const count = getRandomInteger(1, 9);
+  for (let i = 0; i <= count; i++) {
+    photos[i] = `http://picsum.photos/248/152?r=${Math.random()}`;
+  }
+  return photos;
+};
+export const CITY = {
+  Tokyo: [generateDescriptions(), getRandomPhotos()],
+  Oslo: [generateDescriptions(), getRandomPhotos()],
+  Boston: [generateDescriptions(), getRandomPhotos()],
+  Berlin: [generateDescriptions(), getRandomPhotos()],
+  Osaka: [generateDescriptions(), getRandomPhotos()],
+  Karaganda: [generateDescriptions(), getRandomPhotos()],
+  Barcelona: [generateDescriptions(), getRandomPhotos()],
+  Lisbon: [generateDescriptions(), getRandomPhotos()],
+  Riga: [generateDescriptions(), getRandomPhotos()],
+  Kaliningrad: [generateDescriptions(), getRandomPhotos()],
+  Morio: [generateDescriptions(), getRandomPhotos()],
+  Konoha: [generateDescriptions(), getRandomPhotos()]
+};
+
+
 export const generateTrip = () => {
   const start = generateDate();
   const end = generateEndTime(start);
@@ -71,26 +89,21 @@ export const generateTrip = () => {
   const cost = getRandomInteger(COST.MIN, COST.MAX);
   const offers = generateOffers();
   const total = getAllCost(cost, offers);
+  const city = getRandomElement(Object.keys(CITY));
 
   return {
     id: nanoid(),
     start,
     type: generateType(),
-    city: generateCity(),
+    city,
     duration,
     end,
     cost,
     offers,
     total,
     destination: {
-      description: generateDescriptions(),
-      photos: [
-        `http://picsum.photos/248/152?r=${Math.random()}`,
-        `http://picsum.photos/248/152?r=${Math.random()}`,
-        `http://picsum.photos/248/152?r=${Math.random()}`,
-        `http://picsum.photos/248/152?r=${Math.random()}`,
-        `http://picsum.photos/248/152?r=${Math.random()}`,
-      ]
+      description: CITY[city][0],
+      photos: CITY[city][1],
     },
     isFavorite: Boolean(getRandomInteger(0, 1))
   };

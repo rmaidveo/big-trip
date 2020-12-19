@@ -1,4 +1,9 @@
 import {SortType} from "../constants.js";
+export const getRandomElement = (array) => {
+  const rand = Math.floor(Math.random() * array.length);
+  return array[rand];
+};
+
 export const getRandomInteger = (a = 0, b = 1) => {
   const lower = Math.ceil(Math.min(a, b));
   const upper = Math.floor(Math.max(a, b));
@@ -20,27 +25,25 @@ export const updateItem = (items, update) => {
 };
 
 export const sortsTypeOnMap = () => {
-
-  return [
-    {
-      type: SortType.DEFAULT,
-      name: `day`,
-    },
-    {
-      type: SortType.EVENT,
-      name: `event`,
-    },
-    {
-      type: SortType.TIME,
-      name: `time`,
-    },
-    {
-      type: SortType.PRICE,
-      name: `price`,
-    },
-    {
-      type: SortType.OFFERS,
-      name: `offers`,
-    }
+  return [{
+    type: SortType.DEFAULT,
+    name: `day`,
+  },
+  {
+    type: SortType.EVENT,
+    name: `event`,
+  },
+  {
+    type: SortType.TIME,
+    name: `time`,
+  },
+  {
+    type: SortType.PRICE,
+    name: `price`,
+  },
+  {
+    type: SortType.OFFERS,
+    name: `offers`,
+  }
   ];
 };
