@@ -76,6 +76,7 @@ export default class Point {
   _onEscKeyDown(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
+      this._tripEditComponent.reset(this._trip);
       this._replaceFormToCard();
     }
   }
