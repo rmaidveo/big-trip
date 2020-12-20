@@ -16,5 +16,4 @@ const tripBoard = new TripBoard(siteMenuMainHeaderElement, siteSortTripEvents);
 
 render(siteMenuHeaderElement, new SiteMenu(), RenderPosition.BEFOREEND);
 render(siteMenuHeaderElement, new SiteFilter(filters), RenderPosition.BEFOREEND);
-
 tripBoard.init(events);
