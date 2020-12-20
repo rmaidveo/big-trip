@@ -2,6 +2,9 @@ import SmartView from "./smart.js";
 import dayjs from "dayjs";
 import {TYPES, CITIES, OFFERS} from "../constants.js";
 import {CITY} from "../mock/trip.js";
+import flatpickr from "flatpickr";
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
+
 
 const BLANK_TRIP = {
   start: dayjs().format(`DD/MM/YY HH:MM`),
@@ -161,11 +164,17 @@ export default class EditTrip extends SmartView {
   constructor(trip = BLANK_TRIP) {
     super();
     this._data = EditTrip.parseTripToData(trip);
+    this._datepickerstart = null;
+    this._datepickerend = null;
     this._onClickTripEdit = this._onClickTripEdit.bind(this);
     this._onFormSubmitSave = this._onFormSubmitSave.bind(this);
     this._onTypeOfTripClick = this._onTypeOfTripClick.bind(this);
     this._onDestinationInputChange = this._onDestinationInputChange.bind(this);
+    this._onStartDateChange = this._onStartDateChange.bind(this);
+    this._onEndDateChange = this._onEndDateChange.bind(this);
     this._setInnerHandlers();
+    this._setStartDatepicker();
+    this._setEndDatepicker();
   }
 
   reset(trip) {
@@ -201,6 +210,8 @@ export default class EditTrip extends SmartView {
   restoreHandlers() {
     this._setInnerHandlers();
     this.setOnFormSubmitSave(this._callback.submitClick);
+    this._setStartDatepicker();
+    this._setEndDatepicker();
     this.setOnClickTripEdit(this._callback.editClick);
   }
 
@@ -225,6 +236,60 @@ export default class EditTrip extends SmartView {
     );
   }
 
+  _onStartDateChange(userDate) {
+    if (dayjs(userDate).toDate() > dayjs(this._datepickerend.selectedDates).toDate()) {
+      this.updateData({
+        start: dayjs(userDate).toDate(),
+        end: dayjs(userDate).toDate()
+      });
+    } else {
+      this.updateData({
+        start: dayjs(userDate).toDate()
+      });
+    }
+  }
+
+  _setStartDatepicker() {
+    if (this._datepickerstart) {
+      this._datepickerstart.destroy();
+      this._datepickerstart = null;
+    }
+
+    this._datepickerstart = flatpickr(
+        this.getElement().querySelector(`#event-start-time-1`), {
+          'enableTime': true,
+          'time_24hr': true,
+          'dateFormat': `d/m/Y H:i`,
+          'defaultDate': this._data.start,
+          'onClose': this._onStartDateChange
+        }
+    );
+  }
+  _onEndDateChange(userDate) {
+    this.updateData({
+      end: dayjs(userDate).toDate(),
+      duration: dayjs(userDate).diff(dayjs(this._data.start), `minute`),
+    });
+  }
+
+  _setEndDatepicker() {
+    if (this._datepickerend) {
+      this._datepickerend.destroy();
+      this._datepickerend = null;
+    }
+
+    this._datepickerend = flatpickr(
+        this.getElement().querySelector(`#event-end-time-1`), {
+          'enableTime': true,
+          'time_24hr': true,
+          'minDate': dayjs(this._data.start).valueOf(),
+          'dateFormat': `d/m/Y H:i`,
+          'defaultDate': this._data.end,
+          'onClose': this._onEndDateChange
+        }
+    );
+  }
+
   _setInnerHandlers() {
     this.getElement()
       .querySelector(`.event__type-group`)
@@ -233,6 +298,7 @@ export default class EditTrip extends SmartView {
       .querySelector(`.event__input--destination`)
       .addEventListener(`change`, this._onDestinationInputChange);
   }
+
   static parseTripToData(trip) {
     return JSON.parse(JSON.stringify(trip));
   }
