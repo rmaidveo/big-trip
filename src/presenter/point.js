@@ -1,6 +1,7 @@
 import TripListItems from "../view/trip-list-items";
 import EditTrip from "../view/form-edit";
 import {render, RenderPosition, replace, remove} from "../utils/render.js";
+import {UserAction, UpdateType} from "../constants.js";
 const Mode = {
   DEFAULT: `DEFAULT`,
   EDITING: `EDITING`
@@ -19,6 +20,7 @@ export default class Point {
     this._onFormSubmit = this._onFormSubmit.bind(this);
     this._onPoinClick = this._onPoinClick.bind(this);
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
+    this._onDeleteClick = this._onDeleteClick.bind(this);
   }
 
   init(trip) {
@@ -31,6 +33,8 @@ export default class Point {
     this._tripComponent.setOnClickTripPoint(this._onEditClick);
     this._tripEditComponent.setOnFormSubmitSave(this._onFormSubmit);
     this._tripEditComponent.setOnClickTripEdit(this._onPoinClick);
+    this._tripEditComponent.setOnDeleteClick(this._onDeleteClick);
+
 
     if (prevTripComponent === null || prevTripEditComponent === null) {
       render(this._tripListContainer, this._tripComponent, RenderPosition.BEFOREEND);
@@ -83,6 +87,8 @@ export default class Point {
 
   _onFavoriteClick() {
     this._changeData(
+        UserAction.UPDATE_POINT,
+        UpdateType.MINOR,
         Object.assign(
             {},
             this._trip,
@@ -103,7 +109,19 @@ export default class Point {
   }
 
   _onFormSubmit(trip) {
-    this._changeData(trip);
+    this._changeData(
+        UserAction.UPDATE_POINT,
+        UpdateType.MINOR,
+        trip
+    );
     this._replaceFormToCard();
+  }
+
+  _onDeleteClick(trip) {
+    this._changeData(
+        UserAction.DELETE_POINT,
+        UpdateType.MINOR,
+        trip
+    );
   }
 }

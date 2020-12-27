@@ -1,25 +1,24 @@
 import AbstractView from "./abstract.js";
-const createFilterItemsTemplate = (filter, isChecked) => {
+const createFilterItemsTemplate = (filter, currentFilterType) => {
   const {
     name,
-    count
+    type
   } = filter;
   return ` <div class="trip-filters__filter">
-    <input id ="filter-${name}"
+    <input id ="filter-${name.toLowerCase()}"
     class="trip-filters__filter-input  visually-hidden"
     type="radio"
     name="trip-filter"
-    value = "${name}"
-     ${isChecked ? `checked` : ``}
-  ${count === 0 && name !== `everything` ? `disabled` : ``}>
+    value = "${name.toLowerCase()}"
+     ${type === currentFilterType ? `checked` : ``}>
     <label class="trip-filters__filter-label"
-    for="filter-${name}">${name}</label>
+    for="filter-${name.toLowerCase()}">${name}</label>
   </div>`;
 };
 
-const createSiteFilterTemplate = (filterItems) => {
+const createSiteFilterTemplate = (filterItems, currentFilterType) => {
   const filterItemsTemplate = filterItems
-    .map((filter, index) => createFilterItemsTemplate(filter, index === 0))
+    .map((filter) => createFilterItemsTemplate(filter, currentFilterType))
     .join(``);
   return `<form class="trip-filters" action="#" method="get">
   ${filterItemsTemplate}
@@ -27,12 +26,25 @@ const createSiteFilterTemplate = (filterItems) => {
   </form>`;
 };
 export default class SiteFilter extends AbstractView {
-  constructor(filters) {
+  constructor(filters, currentFilterType) {
     super();
     this._filters = filters;
+    this._currentFilter = currentFilterType;
+
+    this._onFilterTypeChange = this._onFilterTypeChange.bind(this);
   }
 
   getTemplate() {
-    return createSiteFilterTemplate(this._filters);
+    return createSiteFilterTemplate(this._filters, this._currentFilter);
+  }
+
+  _onFilterTypeChange(evt) {
+    evt.preventDefault();
+    this._callback.filterTypeChange(evt.target.value);
+  }
+
+  setOnFilterTypeChange(callback) {
+    this._callback.filterTypeChange = callback;
+    this.getElement().addEventListener(`change`, this._onFilterTypeChange);
   }
 }
