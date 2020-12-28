@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import {nanoid} from 'nanoid';
-import {TYPES, COST, OFFERS, DESCRIPTIONS} from "../constants.js";
+import {TYPES, COST, OFFERS, DESCRIPTIONS, CITIES} from "../constants.js";
 import {getRandomInteger, getRandomElement} from "../utils/common.js";
 import {getAllCost} from "../utils/trip.js";
 
@@ -81,6 +81,12 @@ export const CITY = {
   Konoha: [generateDescriptions(), getRandomPhotos()]
 };
 
+const generateDestinationOptionList = (array) => {
+  const count = 3;
+  return new Array(count)
+    .fill()
+    .map(() => getRandomElement(array));
+};
 
 export const generateTrip = () => {
   const start = generateDate();
@@ -90,7 +96,7 @@ export const generateTrip = () => {
   const offers = generateOffers();
   const total = getAllCost(cost, offers);
   const city = getRandomElement(Object.keys(CITY));
-
+  const destinationList = generateDestinationOptionList(CITIES);
   return {
     id: nanoid(),
     start,
@@ -105,6 +111,7 @@ export const generateTrip = () => {
       description: CITY[city][0],
       photos: CITY[city][1],
     },
+    destinationList,
     isFavorite: Boolean(getRandomInteger(0, 1))
   };
 };

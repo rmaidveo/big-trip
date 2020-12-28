@@ -3,126 +3,172 @@ import SiteSort from "../view/site-sort.js";
 import TripList from "../view/trip-list";
 import NoTrip from "../view/no-trips.js";
 import TripPresenter from "./point.js";
+import TripNewPresenter from "./point-new.js";
 import NewTripButtonfrom from "../view/new-trip-button.js";
 import {render, RenderPosition, remove} from "../utils/render.js";
-import {updateItem, sortsTypeOnMap} from "../utils/common.js";
-import {SortType} from "../constants.js";
+import {SortType, UpdateType, UserAction, FilterType} from "../constants.js";
 import {sortByTime, sortByPrice, sortByDay} from "../utils/trip.js";
-const sortList = sortsTypeOnMap();
+import {filter} from "../utils/filter.js";
 
 
 export default class TripBoard {
-  constructor(menuContainer, boardContainer) {
+  constructor(menuContainer, boardContainer, tripsModel, filterModel) {
+    this._tripsModel = tripsModel;
+    this._filterModel = filterModel;
     this._menuContainer = menuContainer;
     this._boardContainer = boardContainer;
     this._tripListComponent = new TripList();
     this._currentSort = SortType.DEFAULT;
-    this._sortsList = sortList;
-    this._tripSortComponent = new SiteSort(this._sortsList, this._currentSort);
+    this._tripSortComponent = null;
+    this._addNewTripButton = new NewTripButtonfrom();
     this._noTripComponent = new NoTrip();
     this._tripPresenter = {};
     this._tripInfo = {};
-    this._onTripChange = this._onTripChange.bind(this);
+    this._onViewActionChange = this._onViewActionChange.bind(this);
+    this._onModelEventChange = this._onModelEventChange.bind(this);
     this._onModeChange = this._onModeChange.bind(this);
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
+    this._tripNewPresenter = new TripNewPresenter(this._tripListComponent, this._onViewActionChange);
   }
 
-  init(boardTrips) {
-    this._boardTrips = boardTrips.slice().sort(sortByDay());
-    this._sourcedBoardTrips = this._boardTrips.slice();
-
+  init() {
     render(this._boardContainer, this._tripListComponent, RenderPosition.AFTERBEGIN);
+    this._tripsModel.addObserver(this._onModelEventChange);
+    this._filterModel.addObserver(this._onModelEventChange);
     this._renderBoard();
   }
 
-  _sortTrips(sortType) {
+  _getTrips() {
+    const filterType = this._filterModel.getFilter();
+    const trips = this._tripsModel.getPoints();
+    const filtredTrips = filter[filterType](trips);
 
-    switch (sortType) {
+    switch (this._currentSort) {
       case SortType.TIME:
-        this._boardTrips.sort(sortByTime());
-        break;
+        return filtredTrips.sort(sortByTime());
       case SortType.PRICE:
-        this._boardTrips.sort(sortByPrice());
-        break;
-      default:
-        this._boardTrips = this._sourcedBoardTrips.slice();
+        return filtredTrips.sort(sortByPrice());
     }
+    return filtredTrips.sort(sortByDay());
+  }
 
-    this._currentSortType = sortType;
+  createPoint() {
+    this._currentSort = SortType.DEFAULT;
+    this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this._tripNewPresenter.init();
   }
 
   _onSortTypeChange(sortType) {
-    if (this._currentSortType === sortType) {
+    if (this._currentSort === sortType) {
       return;
     }
-
-    this._sortTrips(sortType);
-    this._clearTripList();
-    this._renderTripList();
+    this._currentSort = sortType;
+    this._clearBoard();
+    this._renderBoard();
   }
 
   _onModeChange() {
+    this._tripNewPresenter.destroy();
     Object
       .values(this._tripPresenter)
       .forEach((presenter) => presenter.resetView());
   }
 
-  _onTripChange(updatedTrip) {
-    this._boardTrips = updateItem(this._boardTrips, updatedTrip);
-    this._tripPresenter[updatedTrip.id].init(updatedTrip);
+  _onViewActionChange(actionType, updateType, update) {
+    switch (actionType) {
+      case UserAction.UPDATE_POINT:
+        this._tripsModel.updatePoint(updateType, update);
+        break;
+      case UserAction.ADD_POINT:
+        this._tripsModel.addPoint(updateType, update);
+        break;
+      case UserAction.DELETE_POINT:
+        this._tripsModel.deletePoint(updateType, update);
+        break;
+    }
+  }
+
+  _onModelEventChange(updateType, data) {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this._tripPresenter[data.id].init(data);
+        break;
+      case UpdateType.MINOR:
+        this._clearBoard();
+        this._renderBoard();
+        break;
+      case UpdateType.MAJOR:
+        this._clearBoard({resetSortType: true});
+        this._renderBoard();
+        break;
+    }
   }
 
   _renderSort() {
+    if (this._tripSortComponent !== null) {
+      this._tripSortComponent = null;
+    }
+    this._tripSortComponent = new SiteSort(this._currentSort);
+    this._tripSortComponent.setOnSortTypeClick(this._onSortTypeChange);
     render(this._tripListComponent, this._tripSortComponent, RenderPosition.AFTERBEGIN);
-    this._tripSortComponent.setOnSortTypeChange(this._onSortTypeChange);
   }
 
   _renderAddNewTripButton() {
-    const addNewTripButton = new NewTripButtonfrom();
-    render(this._menuContainer, addNewTripButton, RenderPosition.BEFOREEND);
+    render(this._menuContainer, this._addNewTripButton, RenderPosition.BEFOREEND);
   }
 
   _renderTrip(trip) {
-    const tripPresenter = new TripPresenter(this._tripListComponent, this._onTripChange, this._onModeChange);
+    const tripPresenter = new TripPresenter(this._tripListComponent, this._onViewActionChange, this._onModeChange);
     tripPresenter.init(trip);
     this._tripPresenter[trip.id] = tripPresenter;
   }
 
-  _renderTripInfo() {
-    const tripInfo = new TripInfo(this._boardTrips[0]);
+  _renderTripInfo(trip) {
+    const tripInfo = new TripInfo(trip);
     this._tripInfo = tripInfo;
     render(this._menuContainer, this._tripInfo, RenderPosition.AFTERBEGIN);
   }
 
-  _renderTrips() {
-    this._boardTrips
-    .forEach((boardTrip) => this._renderTrip(boardTrip));
-  }
-
-  _clearTripList() {
-    Object
-      .values(this._tripPresenter)
-      .forEach((presenter) => presenter.destroy());
-    this._tripPresenter = {};
-    remove(this._tripInfo);
-  }
-
-  _renderTripList() {
-    if (this._boardTrips.length === 0) {
-      this._renderNoTrips();
-      return;
-    }
-    this._renderTripInfo();
-    this._renderSort();
-    this._renderTrips();
+  _renderTrips(trips) {
+    trips.forEach((trip) => this._renderTrip(trip));
   }
 
   _renderNoTrips() {
     render(this._boardContainer, this._noTripComponent, RenderPosition.AFTERBEGIN);
   }
 
+  _clearBoard({resetRenderedTripCount = false, resetSortType = false} = {}) {
+    const tripCount = this._getTrips().length;
+    this._tripNewPresenter.destroy();
+    Object
+      .values(this._tripPresenter)
+      .forEach((presenter) => presenter.destroy());
+    this._tripPresenter = {};
+
+    remove(this._tripSortComponent);
+    remove(this._noTripComponent);
+    remove(this._tripInfo);
+
+    if (resetRenderedTripCount) {
+      this._renderedTaskCount = tripCount;
+    }
+
+    if (resetSortType) {
+      this._currentSortType = SortType.DEFAULT;
+    }
+  }
+
   _renderBoard() {
+    const trips = this._getTrips().slice();
+    const tripCount = trips.length;
+    if (tripCount === 0) {
+      this._renderNoTrips();
+      return;
+    }
+
+    this._renderTripInfo(trips[0]);
+    this._renderSort();
+    this._renderTrips(trips);
     this._renderAddNewTripButton();
-    this._renderTripList();
   }
 }

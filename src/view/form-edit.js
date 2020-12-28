@@ -1,37 +1,54 @@
 import SmartView from "./smart.js";
 import dayjs from "dayjs";
 import {TYPES, CITIES, OFFERS} from "../constants.js";
+import {getAllCost} from "../utils/trip.js";
 import {CITY} from "../mock/trip.js";
 import flatpickr from "flatpickr";
+import he from "he";
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
+import {nanoid} from "nanoid";
 
 
 const BLANK_TRIP = {
-  start: dayjs().format(`DD/MM/YY HH:MM`),
-  end: dayjs().format(`DD/MM/YY HH:MM`),
+  id: nanoid(),
+  start: dayjs(),
+  end: dayjs(),
   type: TYPES[0],
   offers: {
-    title: OFFERS[0],
-    price: 0
+    title: [OFFERS[0]],
+    price: [100]
   },
   city: CITIES[0],
   cost: 0,
+  total: 100,
   destination: {
     description: [],
     photos: []
-  }
+  },
+  duration: 0,
+  destinationList: [`Tokyo`, `Konoha`, `Osaka`],
+  isFaivorite: false
 };
 
-const createEventTypeItemsTemplate = (currentType) => {
+const pickersDelete = (...pickers) => {
+  pickers.forEach((picker) => {
+    if (picker) {
+      picker.destroy();
+      picker = null;
+    }
+  });
+};
+
+const createEventTypeItemsTemplate = (currentType, id) => {
   const types = TYPES.map((type) => `<div class="event__type-item">
-            <input id="event-type-${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type.toLowerCase()}"
+            <input id="event-type-${type.toLowerCase()}-${id}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type.toLowerCase()}"
              ${currentType === type ? `checked` : ``}>
-            <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-1">${type}</label>
+            <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-${id}">${type}</label>
           </div>`).join(``);
 
   return `
   <div class="event__type-wrapper">
-  <label class="event__type  event__type-btn" for="event-type-toggle-1">
+  <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
         <span class="visually-hidden">Choose event type</span>
         <img class = "event__type-icon"
         width = "17"
@@ -39,7 +56,7 @@ const createEventTypeItemsTemplate = (currentType) => {
         src = "img/icons/${currentType}.png"
         alt = "Event type icon">
       </label>
-      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
     <div class="event__type-list">
     <fieldset class="event__type-group">
      <legend class="visually-hidden">Event type</legend>
@@ -103,50 +120,60 @@ const renderDescript = (destination) => {
   }
   return ` `;
 };
+const createDestinationListTemplate = (options) => {
+  if (options === null) {
+    return ``;
+  }
+
+  return options.map((option) => {
+    return `<option value="${option}"></option>`;
+  }).join(``);
+};
 
 const createFormEditPointOfTripTemplate = (trip) => {
   const {
+    id,
     start,
     end,
     type,
     offers,
     city,
     cost,
-    destination
+    destination,
+    destinationList
   } = trip;
   const starts = dayjs(start).format(`DD/MM/YY HH:MM`);
   const ends = dayjs(end).format(`DD/MM/YY HH:MM`);
   const destinationDescription = renderDescript(destination);
-  const eventsType = createEventTypeItemsTemplate(type);
+  const eventsType = createEventTypeItemsTemplate(type, id);
   const offersList = renderOffersInTrip(offers);
+  const options = createDestinationListTemplate(destinationList);
 
   return `<li class="trip-events__item"><form class="event event--edit" action="#" method="post">
 <header class="event__header">
-
   ${eventsType}
-
      <div class="event__field-group  event__field-group--destination">
-                    <label class="event__label  event__type-output" for="event-destination-1">
+                    <label class="event__label  event__type-output" for="event-destination-${id}">
                      ${type}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${city}" list="destination-list-1">
-                    <datalist id="destination-list-1">
-                      <option value="${type}"></option>
+                    <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-${id}" autocomplete="off">
+                    <datalist id="destination-list-${id}">
+                       ${options}
                     </datalist>
                   </div>
   <div class="event__field-group  event__field-group--time">
-    <label class="visually-hidden" for="event-start-time-1">From</label>
-    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${starts}">
+    <label class="visually-hidden" for="event-start-time-${id}">From</label>
+    <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${starts}">
     &mdash;
-    <label class="visually-hidden" for="event-end-time-1">To</label>
-    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${ends}">
+    <label class="visually-hidden" for="event-end-time-${id}">To</label>
+    <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${ends}">
   </div>
   <div class="event__field-group  event__field-group--price">
-    <label class="event__label" for="event-price-1">
+    <label class="event__label" for="event-price-${id}">
       <span class="visually-hidden">Price</span>
       &euro;
     </label>
-    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${cost}">
+    <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${cost}" autocomplete="off">
   </div>
   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
   <button class="event__reset-btn" type="reset">Delete</button>
@@ -172,9 +199,17 @@ export default class EditTrip extends SmartView {
     this._onDestinationInputChange = this._onDestinationInputChange.bind(this);
     this._onStartDateChange = this._onStartDateChange.bind(this);
     this._onEndDateChange = this._onEndDateChange.bind(this);
+    this._onCostChange = this._onCostChange.bind(this);
+    this._formOnDeleteClick = this._formOnDeleteClick.bind(this);
     this._setInnerHandlers();
     this._setStartDatepicker();
     this._setEndDatepicker();
+    this.setOnDeleteClick(this._callback.deleteClick);
+  }
+
+  removeElement() {
+    super.removeElement();
+    pickersDelete(this._datepickerstart, this._datepickerend);
   }
 
   reset(trip) {
@@ -256,7 +291,7 @@ export default class EditTrip extends SmartView {
     }
 
     this._datepickerstart = flatpickr(
-        this.getElement().querySelector(`#event-start-time-1`), {
+        this.getElement().querySelector(`#event-start-time-${this._data.id}`), {
           'enableTime': true,
           'time_24hr': true,
           'dateFormat': `d/m/Y H:i`,
@@ -272,6 +307,16 @@ export default class EditTrip extends SmartView {
     });
   }
 
+  _onCostChange(evt) {
+    evt.preventDefault();
+    const userDate = Number(evt.target.value);
+    this.updateData({
+      cost: userDate,
+      total: getAllCost(userDate, this._data.offers)
+    });
+
+  }
+
   _setEndDatepicker() {
     if (this._datepickerend) {
       this._datepickerend.destroy();
@@ -279,7 +324,7 @@ export default class EditTrip extends SmartView {
     }
 
     this._datepickerend = flatpickr(
-        this.getElement().querySelector(`#event-end-time-1`), {
+        this.getElement().querySelector(`#event-end-time-${this._data.id}`), {
           'enableTime': true,
           'time_24hr': true,
           'minDate': dayjs(this._data.start).valueOf(),
@@ -297,6 +342,19 @@ export default class EditTrip extends SmartView {
     this.getElement()
       .querySelector(`.event__input--destination`)
       .addEventListener(`change`, this._onDestinationInputChange);
+    this.getElement()
+      .querySelector(`.event__input--price`)
+      .addEventListener(`change`, this._onCostChange);
+  }
+
+  _formOnDeleteClick(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(EditTrip.parseDataToTrip(this._data));
+  }
+
+  setOnDeleteClick(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formOnDeleteClick);
   }
 
   static parseTripToData(trip) {
