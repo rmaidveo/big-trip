@@ -83,3 +83,8 @@ export const UpdateType = {
   MINOR: `MINOR`,
   MAJOR: `MAJOR`
 };
+export const MenuItem = {
+  TABLE: `Table`,
+  STATS: `Stats`
+};
+export const BAR_HEIGHT = 55;
