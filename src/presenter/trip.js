@@ -56,6 +56,7 @@ export default class TripBoard {
     this._currentSort = SortType.DEFAULT;
     this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this._tripNewPresenter.init();
+    remove(this._noTripComponent);
   }
 
   _onSortTypeChange(sortType) {
@@ -137,8 +138,7 @@ export default class TripBoard {
     render(this._boardContainer, this._noTripComponent, RenderPosition.AFTERBEGIN);
   }
 
-  _clearBoard({resetRenderedTripCount = false, resetSortType = false} = {}) {
-    const tripCount = this._getTrips().length;
+  _clearBoard({resetSortType = false} = {}) {
     this._tripNewPresenter.destroy();
     Object
       .values(this._tripPresenter)
@@ -149,13 +149,10 @@ export default class TripBoard {
     remove(this._noTripComponent);
     remove(this._tripInfo);
 
-    if (resetRenderedTripCount) {
-      this._renderedTaskCount = tripCount;
+    if (resetSortType) {
+      this._currentSort = SortType.DEFAULT;
     }
 
-    if (resetSortType) {
-      this._currentSortType = SortType.DEFAULT;
-    }
   }
 
   _renderBoard() {
@@ -170,5 +167,22 @@ export default class TripBoard {
     this._renderSort();
     this._renderTrips(trips);
     this._renderAddNewTripButton();
+  }
+
+  hide() {
+    this._tripListComponent.hide();
+    this._tripSortComponent.hide();
+    this._tripsModel.removeObserver(this._onModelEventChange);
+    this._filterModel.removeObserver(this._onModelEventChange);
+
+  }
+
+  show() {
+    this._tripListComponent.show();
+    this._tripSortComponent.show();
+    this._clearBoard({resetSortType: true});
+    this._renderBoard();
+    this._tripsModel.addObserver(this._onModelEventChange);
+    this._filterModel.addObserver(this._onModelEventChange);
   }
 }
