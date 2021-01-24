@@ -4,6 +4,7 @@ import TripList from "../view/trip-list";
 import NoTrip from "../view/no-trips.js";
 import TripPresenter from "./point.js";
 import TripNewPresenter from "./point-new.js";
+import LoadingView from "../view/loading.js";
 import NewTripButtonfrom from "../view/new-trip-button.js";
 import {render, RenderPosition, remove} from "../utils/render.js";
 import {SortType, UpdateType, UserAction, FilterType} from "../constants.js";
@@ -19,9 +20,11 @@ export default class TripBoard {
     this._boardContainer = boardContainer;
     this._tripListComponent = new TripList();
     this._currentSort = SortType.DEFAULT;
+    this._isLoading = true;
     this._tripSortComponent = null;
     this._addNewTripButton = new NewTripButtonfrom();
     this._noTripComponent = new NoTrip();
+    this._loadingComponent = new LoadingView();
     this._tripPresenter = {};
     this._tripInfo = {};
     this._onViewActionChange = this._onViewActionChange.bind(this);
@@ -40,7 +43,7 @@ export default class TripBoard {
 
   _getTrips() {
     const filterType = this._filterModel.getFilter();
-    const trips = this._tripsModel.getPoints();
+    const trips = this._tripsModel.getPoints().slice();
     const filtredTrips = filter[filterType](trips);
 
     switch (this._currentSort) {
@@ -102,6 +105,11 @@ export default class TripBoard {
         this._clearBoard({resetSortType: true});
         this._renderBoard();
         break;
+      case UpdateType.INIT:
+        this._isLoading = false;
+        remove(this._loadingComponent);
+        this._renderBoard();
+        break;
     }
   }
 
@@ -134,6 +142,11 @@ export default class TripBoard {
     trips.forEach((trip) => this._renderTrip(trip));
   }
 
+  _renderLoading() {
+    render(this._boardContainer, this._loadingComponent, RenderPosition.AFTERBEGIN);
+  }
+
+
   _renderNoTrips() {
     render(this._boardContainer, this._noTripComponent, RenderPosition.AFTERBEGIN);
   }
@@ -147,6 +160,7 @@ export default class TripBoard {
 
     remove(this._tripSortComponent);
     remove(this._noTripComponent);
+    remove(this._loadingComponent);
     remove(this._tripInfo);
 
     if (resetSortType) {
@@ -156,7 +170,12 @@ export default class TripBoard {
   }
 
   _renderBoard() {
-    const trips = this._getTrips().slice();
+    if (this._isLoading) {
+      this._renderLoading();
+      return;
+    }
+
+    const trips = this._getTrips();
     const tripCount = trips.length;
     if (tripCount === 0) {
       this._renderNoTrips();

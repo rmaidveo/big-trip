@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import Observer from "../utils/observer.js";
 
 export default class Points extends Observer {
@@ -6,8 +7,9 @@ export default class Points extends Observer {
     this._points = [];
   }
 
-  setPoints(points) {
+  setPoints(updateType, points) {
     this._points = points.slice();
+    this._notify(updateType);
   }
 
   getPoints() {
@@ -52,6 +54,57 @@ export default class Points extends Observer {
     ];
 
     this._notify(updateType);
+  }
+
+  static adaptToClient(point) {
+    const adaptedPoint = Object.assign(
+        {},
+        point,
+        {
+          isFavorite: point.is_favorite,
+          start: new Date(point.date_from),
+          end: new Date(point.date_to),
+          cost: point.base_price,
+          destination: {
+            description: point.destination.description,
+            photos: point.destination.pictures
+          },
+          city: point.destination.name
+        }
+    );
+    delete adaptedPoint.is_favorite;
+    delete adaptedPoint.date_from;
+    delete adaptedPoint.date_to;
+    delete adaptedPoint.base_price;
+    delete adaptedPoint.destination;
+
+    return adaptedPoint;
+  }
+
+  static adaptToServer(point) {
+    const adaptedPoint = Object.assign(
+        {},
+        point,
+        {
+          "is_favorite": point.isFavorite,
+          "date_from": point.start,
+          "date_to": point.start,
+          "base_price": point.cost,
+          "destination" : {
+            "description": point.destinationList,
+            "name": point.city,
+            "pictures": point.photo
+          }
+        }
+    );
+
+    delete adaptedPoint.isFavorite;
+    delete adaptedPoint.start;
+    delete adaptedPoint.end;
+    delete adaptedPoint.cost;
+    delete adaptedPoint.destinationList;
+
+    return adaptedPoint;
   }
 
 }

@@ -1,4 +1,4 @@
-import AbstractView from "./smart.js";
+import Abstract from "./smart.js";
 import Chart from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {TYPES, BAR_HEIGHT} from "../constants.js";
@@ -294,7 +294,7 @@ const createStatsTemplate = () => {
 </section>`;
 };
 
-export default class Stats extends AbstractView {
+export default class Stats extends Abstract {
   constructor(points) {
     super();
 

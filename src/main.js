@@ -1,16 +1,15 @@
 import SiteMenu from "./view/site-menu.js";
 import {remove, render, RenderPosition} from "./utils/render.js";
-import {generateTrip} from "./mock/trip.js";
 import TripBoard from "./presenter/trip.js";
 import FilterPresenter from "./presenter/filter.js";
 import Points from "./model/points.js";
 import Filter from "./model/filter.js";
-import {MenuItem} from "./constants.js";
+import {MenuItem, UpdateType} from "./constants.js";
 import Stats from "./view/stats.js";
+import Api from "./api.js";
 
-const EVENTS_COUNT = 5;
-const events = new Array(EVENTS_COUNT).fill().map(generateTrip);
-
+const AUTHORIZATION = `Basic UCjRB7mK8mS`;
+const END_POINT = `https://13.ecmascript.pages.academy/big-trip/.`;
 const tripsModel = new Points();
 const filterModel = new Filter();
 const siteHeaderElement = document.querySelector(`.page-header`);
@@ -22,6 +21,8 @@ const tripBoard = new TripBoard(siteMenuMainHeaderElement, siteSortTripEvents, t
 const filterPresenter = new FilterPresenter(siteMenuHeaderElement, filterModel, tripsModel);
 const siteMenuComponent = new SiteMenu();
 let stats = null;
+const api = new Api(END_POINT, AUTHORIZATION);
+const events = [];
 
 const onSiteMenuClick = (menuItem) => {
   menuItem = menuItem.textContent;
@@ -37,14 +38,26 @@ const onSiteMenuClick = (menuItem) => {
       break;
   }
 };
-
 render(siteMenuHeaderElement, siteMenuComponent, RenderPosition.BEFOREEND);
 siteMenuComponent.setMenuClick(onSiteMenuClick);
-
 filterPresenter.init();
-tripsModel.setPoints(events);
 tripBoard.init();
-document.querySelector(`.trip-main__event-add-btn`).addEventListener(`click`, (evt) => {
-  evt.preventDefault();
-  tripBoard.createPoint();
+// api.getPoints().then((points) => {
+//   console.log(points);
+
+// });
+api.getPoints()
+.then((points) => {
+  tripsModel.setPoints(UpdateType.INIT, points);
+
+})
+.catch(() => {
+  tripsModel.setPoints(UpdateType.INIT, []);
+  render(siteMenuHeaderElement, siteMenuComponent, RenderPosition.BEFOREEND);
+  siteMenuComponent.setMenuClick(onSiteMenuClick);
 });
+// document.querySelector(`.trip-main__event-add-btn`).addEventListener(`click`, (evt) => {
+//   evt.preventDefault();
+//   tripBoard.createPoint();
+// });
+

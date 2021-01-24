@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import AbstractView from "./abstract.js";
+import Abstract from "./abstract.js";
 import {TIME_IN_MIN, TYPES, CITIES, OFFERS, DESCRIPTIONS} from "../constants.js";
 
 const BLANK_TRIP = {
@@ -99,7 +99,7 @@ const createTripEventsListItemTemplate = (trip) => {
   </div>
 </li>`;
 };
-export default class TripListItems extends AbstractView {
+export default class TripListItems extends Abstract {
   constructor(trip = BLANK_TRIP) {
     super();
     this._trip = trip;

@@ -109,7 +109,7 @@ export const generateTrip = () => {
     total,
     destination: {
       description: CITY[city][0],
-      photos: CITY[city][1],
+      photos: CITY[city][1]
     },
     destinationList,
     isFavorite: Boolean(getRandomInteger(0, 1))

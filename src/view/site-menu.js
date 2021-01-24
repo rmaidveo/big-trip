@@ -1,4 +1,4 @@
-import AbstractView from "./abstract.js";
+import Abstract from "./abstract.js";
 import {MenuItem} from "../constants.js";
 const ACTIVE_MENU = `trip-tabs__btn--active`;
 
@@ -8,7 +8,7 @@ const createSiteMenuTemplate = () => {
   <a class="trip-tabs__btn" href="#">${MenuItem.STATS}</a>
 </nav>`;
 };
-export default class SiteMenu extends AbstractView {
+export default class SiteMenu extends Abstract {
   constructor() {
     super();
 

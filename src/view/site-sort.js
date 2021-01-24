@@ -1,4 +1,4 @@
-import AbstractView from "./abstract.js";
+import Abstract from "./abstract.js";
 import {SortType} from "../constants.js";
 import {sortsTypeOnMap} from "../utils/common.js";
 
@@ -25,7 +25,7 @@ ${sortItemsTemplate}
 </form>`;
 
 };
-export default class SiteSort extends AbstractView {
+export default class SiteSort extends Abstract {
   constructor(currentSortType) {
     super();
     this._currentSort = currentSortType;
