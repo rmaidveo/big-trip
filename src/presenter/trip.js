@@ -13,9 +13,12 @@ import {filter} from "../utils/filter.js";
 
 
 export default class TripBoard {
-  constructor(menuContainer, boardContainer, tripsModel, filterModel) {
+  constructor(menuContainer, boardContainer, tripsModel, filterModel, offersModel, destinationsModel, api) {
     this._tripsModel = tripsModel;
     this._filterModel = filterModel;
+    this._offersModel = offersModel;
+    this._destinationsModel = destinationsModel;
+    this._api = api;
     this._menuContainer = menuContainer;
     this._boardContainer = boardContainer;
     this._tripListComponent = new TripList();
@@ -81,7 +84,9 @@ export default class TripBoard {
   _onViewActionChange(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this._tripsModel.updatePoint(updateType, update);
+        this._api.updatePoint(update).then((response) => {
+          this._tripsModel.updatePoint(updateType, response);
+        });
         break;
       case UserAction.ADD_POINT:
         this._tripsModel.addPoint(updateType, update);
@@ -95,7 +100,7 @@ export default class TripBoard {
   _onModelEventChange(updateType, data) {
     switch (updateType) {
       case UpdateType.PATCH:
-        this._tripPresenter[data.id].init(data);
+        this._tripPresenter[data.id].init(data, this._offersModel);
         break;
       case UpdateType.MINOR:
         this._clearBoard();
@@ -127,8 +132,8 @@ export default class TripBoard {
   }
 
   _renderTrip(trip) {
-    const tripPresenter = new TripPresenter(this._tripListComponent, this._onViewActionChange, this._onModeChange);
-    tripPresenter.init(trip);
+    const tripPresenter = new TripPresenter(this._tripListComponent, this._onViewActionChange, this._onModeChange, this._destinationsModel);
+    tripPresenter.init(trip, this._offersModel);
     this._tripPresenter[trip.id] = tripPresenter;
   }
 
@@ -183,9 +188,9 @@ export default class TripBoard {
     }
 
     this._renderTripInfo(trips[0]);
+    this._renderAddNewTripButton();
     this._renderSort();
     this._renderTrips(trips);
-    this._renderAddNewTripButton();
   }
 
   hide() {

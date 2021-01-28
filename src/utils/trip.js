@@ -8,6 +8,12 @@ export const getAllCost = (cost, offers) => {
   return allcost;
 };
 
+export const generateDuration = (starts, ends) => {
+  const start = dayjs(starts);
+  const end = dayjs(ends);
+  return end.diff(start, `minute`);
+};
+
 export const isTripPlanned = (date) => {
   return dayjs().isAfter(date, `D`) ? false : dayjs().isBefore(date, `D`);
 };
@@ -22,11 +28,11 @@ export const sortByField = (field) => {
 };
 
 export const sortByPrice = () => {
-  return (a, b) => b[`total`] > a[`total`] ? 1 : -1;
+  return (a, b) => getAllCost(b[`cost`], b[`offers`]) > getAllCost(a[`cost`], a[`offers`]) ? 1 : -1;
 };
 
 export const sortByTime = () => {
-  return (a, b) => b[`duration`] > a[`duration`] ? 1 : -1;
+  return (a, b) => dayjs(b.end).diff(b.start) - dayjs(a.end).diff(a.start);
 };
 
 export const sortByDay = () => {

@@ -22,11 +22,9 @@ export default class NewTrip {
     }
     this._tripComponent = new TripListItems();
     this._tripEditComponent = new EditTrip();
+    render(this._tripListContainer, this._tripEditComponent, RenderPosition.AFTERBEGIN);
     this._tripEditComponent.setOnFormSubmitSave(this._onFormSubmit);
     this._tripEditComponent.setOnDeleteClick(this._onDeleteClick);
-
-    render(this._tripListContainer, this._tripEditComponent, RenderPosition.AFTERBEGIN);
-
     document.addEventListener(`keydown`, this._onEscKeyDown);
   }
 

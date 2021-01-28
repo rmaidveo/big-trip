@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import Observer from "../utils/observer.js";
 
 export default class Points extends Observer {
@@ -55,56 +54,51 @@ export default class Points extends Observer {
 
     this._notify(updateType);
   }
-
   static adaptToClient(point) {
-    const adaptedPoint = Object.assign(
-        {},
-        point,
+    const adaptedPoint = Object.assign({}, point,
         {
-          isFavorite: point.is_favorite,
           start: new Date(point.date_from),
           end: new Date(point.date_to),
-          cost: point.base_price,
           destination: {
-            description: point.destination.description,
-            photos: point.destination.pictures
+            city: point.destination.name,
+            description: [point.destination.description],
+            photos: point.destination.pictures,
           },
-          city: point.destination.name
-        }
-    );
-    delete adaptedPoint.is_favorite;
+          cost: point.base_price,
+          isFavorite: point.is_favorite,
+          offers: {
+            title: point.offers.map((ar) => ar.title),
+            price: point.offers.map((ar) => ar.price),
+          }
+        });
+    delete adaptedPoint.base_price;
     delete adaptedPoint.date_from;
     delete adaptedPoint.date_to;
-    delete adaptedPoint.base_price;
-    delete adaptedPoint.destination;
+    delete adaptedPoint.is_favorite;
 
     return adaptedPoint;
   }
 
-  static adaptToServer(point) {
-    const adaptedPoint = Object.assign(
-        {},
-        point,
-        {
-          "is_favorite": point.isFavorite,
-          "date_from": point.start,
-          "date_to": point.start,
-          "base_price": point.cost,
-          "destination" : {
-            "description": point.destinationList,
-            "name": point.city,
-            "pictures": point.photo
-          }
-        }
-    );
+  static adaptToServer({id, type, destination, start, end, cost, offers, isFavorite}) {
+    return {
+      "id": id,
+      "type": type,
+      "date_from": start,
+      "date_to": end,
+      "destination": {
+        "name": destination.city,
+        "description": destination.description.join(),
+        "pictures": destination.photos,
+      },
+      "base_price": cost,
+      "is_favorite": isFavorite,
+      "offers": offers.title.map((i, ind) => ({
+        "title": i,
+        "price": offers.price[ind],
 
-    delete adaptedPoint.isFavorite;
-    delete adaptedPoint.start;
-    delete adaptedPoint.end;
-    delete adaptedPoint.cost;
-    delete adaptedPoint.destinationList;
+      }))
 
-    return adaptedPoint;
+    };
   }
 
 }

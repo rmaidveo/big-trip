@@ -1,34 +1,9 @@
 import SmartView from "./smart.js";
 import dayjs from "dayjs";
-import {TYPES, CITIES, OFFERS} from "../constants.js";
-import {getAllCost} from "../utils/trip.js";
-import {CITY} from "../mock/trip.js";
+import {TYPES, BLANK_TRIP} from "../constants.js";
 import flatpickr from "flatpickr";
 import he from "he";
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
-import {nanoid} from "nanoid";
-
-
-const BLANK_TRIP = {
-  id: nanoid(),
-  start: dayjs(),
-  end: dayjs(),
-  type: TYPES[0],
-  offers: {
-    title: [OFFERS[0]],
-    price: [100]
-  },
-  city: CITIES[0],
-  cost: 0,
-  total: 100,
-  destination: {
-    description: [],
-    photos: []
-  },
-  duration: 0,
-  destinationList: [`Tokyo`, `Konoha`, `Osaka`],
-  isFaivorite: false
-};
 
 const pickersDelete = (...pickers) => {
   pickers.forEach((picker) => {
@@ -72,7 +47,7 @@ const renderOffersInTrip = (offers) => {
 
   for (let i = 0; i < title.length; i++) {
     offer += `<div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" type="checkbox" name="event-offer-luggage" checked>
+            <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" type="checkbox" name="event-offer-luggage" data-offer-price="${price[i]}" data-offer-name="${title[i]}" ${offers.title.includes(title[i]) ? `checked` : ``}>
           <label class="event__offer-label" for="event-offer-luggage-${i}">
             <span class="event__offer-title">${title[i]}</span>
             &plus;&euro;&nbsp;
@@ -93,7 +68,7 @@ const renderOffersInTrip = (offers) => {
 
 const renderPhotos = (photos) => {
   let photoTemplate = photos.map((photo) =>
-    `<img class="event__photo" src="${photo}" alt="Event photo">`).join(``);
+    `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`).join(``);
   if (photos.length > 0) {
     return `<div class="event__photos-container">
         <div class="event__photos-tape">
@@ -105,11 +80,7 @@ const renderPhotos = (photos) => {
 
 };
 
-const renderDescript = (destination) => {
-  const {
-    description,
-    photos
-  } = destination;
+const renderDescript = (description, photos) => {
   const destinationPhotos = renderPhotos(photos);
   if (description.length > 0) {
     return `<section class="event__section  event__section--destination">
@@ -120,6 +91,7 @@ const renderDescript = (destination) => {
   }
   return ` `;
 };
+
 const createDestinationListTemplate = (options) => {
   if (options === null) {
     return ``;
@@ -137,18 +109,16 @@ const createFormEditPointOfTripTemplate = (trip) => {
     end,
     type,
     offers,
-    city,
     cost,
-    destination,
-    destinationList
+    destination
   } = trip;
+  const {city, description, photos} = destination;
   const starts = dayjs(start).format(`DD/MM/YY HH:MM`);
   const ends = dayjs(end).format(`DD/MM/YY HH:MM`);
-  const destinationDescription = renderDescript(destination);
+  const destinationDescription = renderDescript(description, photos);
   const eventsType = createEventTypeItemsTemplate(type, id);
   const offersList = renderOffersInTrip(offers);
-  const options = createDestinationListTemplate(destinationList);
-
+  const options = createDestinationListTemplate([city]);
   return `<li class="trip-events__item"><form class="event event--edit" action="#" method="post">
 <header class="event__header">
   ${eventsType}
@@ -187,6 +157,7 @@ const createFormEditPointOfTripTemplate = (trip) => {
 </form>
 </li> `;
 };
+export const getListByType = (structure, type) => structure.map((item) => item[type]);
 export default class EditTrip extends SmartView {
   constructor(trip = BLANK_TRIP) {
     super();
@@ -201,6 +172,7 @@ export default class EditTrip extends SmartView {
     this._onEndDateChange = this._onEndDateChange.bind(this);
     this._onCostChange = this._onCostChange.bind(this);
     this._formOnDeleteClick = this._formOnDeleteClick.bind(this);
+    this._onOffersInputChange = this._onOffersInputChange.bind(this);
     this._setInnerHandlers();
     this._setStartDatepicker();
     this._setEndDatepicker();
@@ -259,16 +231,26 @@ export default class EditTrip extends SmartView {
 
   _onDestinationInputChange(evt) {
     const newCity = evt.target.value;
-    Object.assign({},
-        this._data.destination,
-        this._data.city,
-        this._data.city = newCity,
-        this._data.destination.description = CITY[newCity][0],
-        this._data.destination.photos = CITY[newCity][1]);
-    this.updateData(
-        this._data.city,
-        this._data.destination
-    );
+
+    this.updateData({
+      destination: {
+        city: newCity
+      }
+    });
+  }
+
+  _onOffersInputChange(evt) {
+    if (evt.target.tagName !== `INPUT`) {
+      return;
+    }
+    let checkedOffers = this.getElement().querySelectorAll(`input.event__offer-checkbox:checked`);
+    const checkedOffersTitle = Array.from(checkedOffers).map((checkedOffer) => checkedOffer.dataset.offerName);
+    const checkedOffersPrice = Array.from(checkedOffers).map((checkedOffer) => Number(checkedOffer.dataset.offerPrice));
+    this.updateData({offers: {
+      title: checkedOffersTitle,
+      price: checkedOffersPrice
+    }
+    });
   }
 
   _onStartDateChange(userDate) {
@@ -303,7 +285,7 @@ export default class EditTrip extends SmartView {
   _onEndDateChange(userDate) {
     this.updateData({
       end: dayjs(userDate).toDate(),
-      duration: dayjs(userDate).diff(dayjs(this._data.start), `minute`),
+      start: dayjs(this._data.start).toDate(),
     });
   }
 
@@ -311,8 +293,7 @@ export default class EditTrip extends SmartView {
     evt.preventDefault();
     const userDate = Number(evt.target.value);
     this.updateData({
-      cost: userDate,
-      total: getAllCost(userDate, this._data.offers)
+      cost: userDate
     });
 
   }
@@ -336,6 +317,10 @@ export default class EditTrip extends SmartView {
   }
 
   _setInnerHandlers() {
+    const offers = this.getElement().querySelector(`.event__available-offers`);
+    if (offers) {
+      offers.addEventListener(`change`, this._onOffersInputChange);
+    }
     this.getElement()
       .querySelector(`.event__type-group`)
       .addEventListener(`change`, this._onTypeOfTripClick);

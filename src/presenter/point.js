@@ -1,11 +1,7 @@
 import TripListItems from "../view/trip-list-items";
 import EditTrip from "../view/form-edit";
 import {render, RenderPosition, replace, remove} from "../utils/render.js";
-import {UserAction, UpdateType} from "../constants.js";
-const Mode = {
-  DEFAULT: `DEFAULT`,
-  EDITING: `EDITING`
-};
+import {UserAction, UpdateType, Mode} from "../constants.js";
 
 export default class Point {
   constructor(tripListContainer, changeData, changeMode) {
@@ -27,8 +23,8 @@ export default class Point {
     this._trip = trip;
     const prevTripComponent = this._tripComponent;
     const prevTripEditComponent = this._tripEditComponent;
-    this._tripComponent = new TripListItems(trip);
-    this._tripEditComponent = new EditTrip(trip);
+    this._tripComponent = new TripListItems(this._trip);
+    this._tripEditComponent = new EditTrip(this._trip);
     this._tripComponent.setOnFavoriteClick(this._onFavoriteClick);
     this._tripComponent.setOnClickTripPoint(this._onEditClick);
     this._tripEditComponent.setOnFormSubmitSave(this._onFormSubmit);

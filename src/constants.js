@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+import {nanoid} from 'nanoid';
 export const TYPES = [
   `Taxi`,
   `Bus`,
@@ -89,3 +91,46 @@ export const MenuItem = {
   STATS: `Stats`
 };
 export const BAR_HEIGHT = 55;
+
+export const Mode = {
+  DEFAULT: `DEFAULT`,
+  EDITING: `EDITING`
+};
+
+export const BLANK_TRIP = {
+  id: nanoid(),
+  start: dayjs(),
+  end: dayjs(),
+  type: TYPES[0],
+  offers: {
+    title: [OFFERS[0]],
+    price: [100]
+  },
+  cost: 0,
+  destination: {
+    city: CITIES[0],
+    description: [],
+    photos: []
+  },
+  isFaivorite: false
+};
+export const Structure = {
+  TYPE: `type`,
+  PLACE: `place`,
+};
+export const createTypeOffersDictionary = (offers) => {
+  return offers.reduce((acc, current, index) => {
+    acc[`offer${index + 1}`] = {
+      title: current.title,
+      price: current.price
+    };
+
+    return acc;
+  }, {});
+};
+
+export const collectOffersTitles = (offers) => {
+  return offers.map((offer) => {
+    return offer.title;
+  });
+};

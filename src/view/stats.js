@@ -304,6 +304,7 @@ export default class Stats extends Abstract {
     this._timeChart = null;
 
     this._setCharts();
+    this.hide();
   }
 
   getTemplate() {

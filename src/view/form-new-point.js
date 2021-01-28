@@ -1,22 +1,7 @@
 import dayjs from "dayjs";
-import {TYPES, CITIES, OFFERS} from "../constants.js";
+import {TYPES, BLANK_TRIP} from "../constants.js";
 import Abstract from "./abstract.js";
-
-const BLANK_TRIP = {
-  start: dayjs().format(`DD/MM/YY HH:MM`),
-  end: dayjs().format(`DD/MM/YY HH:MM`),
-  type: TYPES[0],
-  offers: {
-    title: [OFFERS[0]],
-    price: [0]
-  },
-  city: CITIES[0],
-  cost: 0,
-  destination: {
-    description: [],
-    photos: []
-  }
-};
+import he from "he";
 
 const createEventTypeItemsTemplate = () => {
   return TYPES.map((type) => `<div class="event__type-item">
@@ -54,30 +39,39 @@ const renderOffersInTrip = (offers) => {
   }
   return offer;
 };
+
 const renderPhotos = (photos) => {
-  let photo = ``;
-  for (let i = 0; i < photos.length; i++) {
-    photo += ` <img class="event__photo" src="${photos[i]}" alt="Event photo">`;
+  let photoTemplate = photos.map((photo) =>
+    `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`).join(``);
+  if (photos.length > 0) {
+    return `<div class="event__photos-container">
+        <div class="event__photos-tape">
+        ${photoTemplate}
+          </div>
+      </div>`;
   }
-  return photo;
+  return ` `;
+
+};
+
+const renderDescript = (description, photos) => {
+  const destinationPhotos = renderPhotos(photos);
+  if (description.length > 0) {
+    return `<section class="event__section  event__section--destination">
+    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+    <p class="event__destination-description"> ${description.join(` `)} </p>
+          ${destinationPhotos}
+    </section>`;
+  }
+  return ` `;
 };
 
 const createFormNewPointOfTripTemplate = (trip) => {
-  const {start, end, type, offers, city, cost, destination} = trip;
+  const {start, end, type, offers, cost, destination} = trip;
+  const {city, description, photos} = destination;
   const starts = dayjs(start).format(`DD/MM/YY HH:MM`);
   const ends = dayjs(end).format(`DD/MM/YY HH:MM`);
-  const destDescript = destination.description.join(` `);
-  const destinationPhotos = renderPhotos(destination.photos);
-  const destinationDescription = destination.description === 0 && destinationPhotos.length === 0 ? `` :
-    `<section class="event__section  event__section--destination">
-    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description"> ${destDescript} </p>
-      <div class="event__photos-container">
-        <div class="event__photos-tape">
-          ${destinationPhotos}
-        </div>
-      </div>
-    </section>`;
+  const destinationDescription = renderDescript(description, photos);
   const eventsType = createEventTypeListItemsTemplate(type);
   const offersList = renderOffersInTrip(offers);
 
@@ -91,7 +85,7 @@ const createFormNewPointOfTripTemplate = (trip) => {
       <label class="event__label  event__type-output" for="event-destination-1">
        ${type}
       </label>
-      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${city}" list="destination-list-1">
+      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-1">
     </div>
 
     <div class="event__field-group  event__field-group--time">

@@ -1,4 +1,7 @@
 import PointsModel from "./model/points.js";
+import OffersModel from "./model/offers.js";
+import DestinationsModel from "./model/destination.js";
+
 const Method = {
   GET: `GET`,
   PUT: `PUT`
@@ -21,6 +24,18 @@ export default class Api {
       .then((points) => points.map(PointsModel.adaptToClient));
   }
 
+  getOffers() {
+    return this._load({url: `offers`})
+      .then(Api.toJSON)
+      .then((offers) => offers.map(OffersModel.adaptToClient));
+  }
+
+  getDestinations() {
+    return this._load({url: `destinations`})
+      .then(Api.toJSON)
+      .then((destinations) => destinations.map(DestinationsModel.adaptToClient));
+  }
+
   updatePoint(point) {
     return this._load({
       url: `points/${point.id}`,
@@ -28,7 +43,8 @@ export default class Api {
       body: JSON.stringify(PointsModel.adaptToServer(point)),
       headers: new Headers({"Content-Type": `application/json`})
     })
-      .then(Api.toJSON);
+      .then(Api.toJSON)
+      .then(PointsModel.adaptToClient);
   }
 
   _load({
