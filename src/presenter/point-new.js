@@ -5,8 +5,10 @@ import {UserAction, UpdateType} from "../constants.js";
 import {nanoid} from "nanoid";
 
 export default class NewTrip {
-  constructor(tripListContainer, changeData) {
+  constructor(tripListContainer, changeData, destinationsModel, offersModel) {
     this._tripListContainer = tripListContainer;
+    this._destinationsModel = destinationsModel;
+    this._offersModel = offersModel;
     this._changeData = changeData;
     this._tripComponent = null;
     this._tripEditComponent = null;
@@ -21,7 +23,7 @@ export default class NewTrip {
       return;
     }
     this._tripComponent = new TripListItems();
-    this._tripEditComponent = new EditTrip();
+    this._tripEditComponent = new EditTrip(this._destinationsModel, this._offersModel);
     render(this._tripListContainer, this._tripEditComponent, RenderPosition.AFTERBEGIN);
     this._tripEditComponent.setOnFormSubmitSave(this._onFormSubmit);
     this._tripEditComponent.setOnDeleteClick(this._onDeleteClick);

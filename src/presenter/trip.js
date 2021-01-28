@@ -18,6 +18,7 @@ export default class TripBoard {
     this._filterModel = filterModel;
     this._offersModel = offersModel;
     this._destinationsModel = destinationsModel;
+    this._offersModel = offersModel;
     this._api = api;
     this._menuContainer = menuContainer;
     this._boardContainer = boardContainer;
@@ -124,7 +125,7 @@ export default class TripBoard {
     }
     this._tripSortComponent = new SiteSort(this._currentSort);
     this._tripSortComponent.setOnSortTypeClick(this._onSortTypeChange);
-    render(this._tripListComponent, this._tripSortComponent, RenderPosition.AFTERBEGIN);
+    render(this._boardContainer, this._tripSortComponent, RenderPosition.AFTERBEGIN);
   }
 
   _renderAddNewTripButton() {
@@ -132,7 +133,7 @@ export default class TripBoard {
   }
 
   _renderTrip(trip) {
-    const tripPresenter = new TripPresenter(this._tripListComponent, this._onViewActionChange, this._onModeChange, this._destinationsModel);
+    const tripPresenter = new TripPresenter(this._tripListComponent, this._onViewActionChange, this._onModeChange, this._destinationsModel, this._offersModel);
     tripPresenter.init(trip, this._offersModel);
     this._tripPresenter[trip.id] = tripPresenter;
   }

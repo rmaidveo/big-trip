@@ -26,8 +26,8 @@ const api = new Api(END_POINT, AUTHORIZATION);
 const tripBoard = new TripBoard(siteMenuMainHeaderElement, siteSortTripEvents, tripsModel, filterModel, offersModel, destinationsModel, api);
 const filterPresenter = new FilterPresenter(siteMenuHeaderElement, filterModel, tripsModel);
 const siteMenuComponent = new SiteMenu();
-let statisticsComponent = new Stats(tripsModel.getPoints());
-render(sitePageMainElement, statisticsComponent, RenderPosition.AFTERBEGIN);
+let stats = null;
+let statisticsComponent = null;
 
 const onSiteMenuClick = (menuItem) => {
   menuItem = menuItem.textContent;
@@ -37,6 +37,8 @@ const onSiteMenuClick = (menuItem) => {
       tripBoard.show();
       break;
     case MenuItem.STATS:
+      statisticsComponent = new Stats(stats);
+      render(sitePageMainElement, statisticsComponent, RenderPosition.AFTERBEGIN);
       tripBoard.hide();
       statisticsComponent.show();
       break;
@@ -48,6 +50,7 @@ tripBoard.init();
 
 Promise.all([api.getPoints(), api.getOffers(), api.getDestinations()])
 .then(([apiPoints, apiOffers, apiDestination]) => {
+  stats = apiPoints;
   offersModel.setOffers(apiOffers);
   destinationsModel.setDestinations(apiDestination);
   tripsModel.setPoints(UpdateType.INIT, apiPoints);

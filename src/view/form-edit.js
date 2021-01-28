@@ -1,6 +1,7 @@
 import SmartView from "./smart.js";
 import dayjs from "dayjs";
-import {TYPES, BLANK_TRIP} from "../constants.js";
+import {BLANK_TRIP} from "../constants.js";
+import {capitalizeFirstLetter} from "../utils/common.js";
 import flatpickr from "flatpickr";
 import he from "he";
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
@@ -14,11 +15,11 @@ const pickersDelete = (...pickers) => {
   });
 };
 
-const createEventTypeItemsTemplate = (currentType, id) => {
-  const types = TYPES.map((type) => `<div class="event__type-item">
+export const createEventTypeItemsTemplate = (allTypes, currentType, id) => {
+  const types = allTypes.map((type) => `<div class="event__type-item">
             <input id="event-type-${type.toLowerCase()}-${id}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type.toLowerCase()}"
              ${currentType === type ? `checked` : ``}>
-            <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-${id}">${type}</label>
+            <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-${id}">${capitalizeFirstLetter(type)}</label>
           </div>`).join(``);
 
   return `
@@ -41,7 +42,7 @@ ${types}
                   </div>`;
 };
 
-const renderOffersInTrip = (offers) => {
+export const renderOffersInTrip = (offers) => {
   let offer = ` `;
   const {title, price} = offers;
 
@@ -66,7 +67,7 @@ const renderOffersInTrip = (offers) => {
   return offer;
 };
 
-const renderPhotos = (photos) => {
+export const renderPhotos = (photos) => {
   let photoTemplate = photos.map((photo) =>
     `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`).join(``);
   if (photos.length > 0) {
@@ -80,7 +81,7 @@ const renderPhotos = (photos) => {
 
 };
 
-const renderDescript = (description, photos) => {
+export const renderDescript = (description, photos) => {
   const destinationPhotos = renderPhotos(photos);
   if (description.length > 0) {
     return `<section class="event__section  event__section--destination">
@@ -102,7 +103,7 @@ const createDestinationListTemplate = (options) => {
   }).join(``);
 };
 
-const createFormEditPointOfTripTemplate = (trip) => {
+const createFormEditPointOfTripTemplate = (trip, destinationList, offersTypeList) => {
   const {
     id,
     start,
@@ -113,12 +114,18 @@ const createFormEditPointOfTripTemplate = (trip) => {
     destination
   } = trip;
   const {city, description, photos} = destination;
+  const optionsList = destinationList.map((i) =>{
+    return Object.values(i)[0];
+  });
+  const TYPES = offersTypeList.map((i) =>{
+    return Object.values(i)[0];
+  });
   const starts = dayjs(start).format(`DD/MM/YY HH:MM`);
   const ends = dayjs(end).format(`DD/MM/YY HH:MM`);
   const destinationDescription = renderDescript(description, photos);
-  const eventsType = createEventTypeItemsTemplate(type, id);
+  const eventsType = createEventTypeItemsTemplate(TYPES, type, id);
   const offersList = renderOffersInTrip(offers);
-  const options = createDestinationListTemplate([city]);
+  const options = createDestinationListTemplate(optionsList);
   return `<li class="trip-events__item"><form class="event event--edit" action="#" method="post">
 <header class="event__header">
   ${eventsType}
@@ -157,11 +164,14 @@ const createFormEditPointOfTripTemplate = (trip) => {
 </form>
 </li> `;
 };
-export const getListByType = (structure, type) => structure.map((item) => item[type]);
 export default class EditTrip extends SmartView {
-  constructor(trip = BLANK_TRIP) {
+  constructor(trip = BLANK_TRIP, destinationModel, offersModel) {
     super();
     this._data = EditTrip.parseTripToData(trip);
+    this._destinationModel = destinationModel;
+    this._offersModel = offersModel;
+    this._destinationList = destinationModel.getDestinations();
+    this._offersList = offersModel.getOffers();
     this._datepickerstart = null;
     this._datepickerend = null;
     this._onClickTripEdit = this._onClickTripEdit.bind(this);
@@ -191,7 +201,7 @@ export default class EditTrip extends SmartView {
   }
 
   getTemplate() {
-    return createFormEditPointOfTripTemplate(this._data);
+    return createFormEditPointOfTripTemplate(this._data, this._destinationList, this._offersList);
   }
 
   _onClickTripEdit(evt) {
@@ -224,8 +234,10 @@ export default class EditTrip extends SmartView {
 
   _onTypeOfTripClick(evt) {
     evt.preventDefault();
+    const newType = evt.target.value;
     this.updateData({
-      type: evt.target.value
+      type: newType,
+      offers: this._offersList.find((offer) => offer.type === newType).offers
     });
   }
 
@@ -234,7 +246,9 @@ export default class EditTrip extends SmartView {
 
     this.updateData({
       destination: {
-        city: newCity
+        city: newCity,
+        description: [this._destinationList.find((descriptionCity) => descriptionCity.city === newCity).description],
+        photos: this._destinationList.find((photoCity) => photoCity.city === newCity).photos
       }
     });
   }

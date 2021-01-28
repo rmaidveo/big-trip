@@ -2,77 +2,15 @@ import dayjs from "dayjs";
 import {TYPES, BLANK_TRIP} from "../constants.js";
 import Abstract from "./abstract.js";
 import he from "he";
-
-const createEventTypeItemsTemplate = () => {
-  return TYPES.map((type) => `<div class="event__type-item">
-            <input id="event-type-${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type.toLowerCase()}">
-            <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-1">${type}</label>
-          </div>`).join(``);
-};
-const createEventTypeItems = createEventTypeItemsTemplate();
-
-const createEventTypeListItemsTemplate = (type) => {
-  return `<label class="event__type  event__type-btn" for="event-type-toggle-1">
-        <span class="visually-hidden">Choose event type</span>
-        <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
-      </label>
-      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
-      <div class="event__type-list">
-        <fieldset class="event__type-group">
-          <legend class="visually-hidden">Event type</legend>
-${createEventTypeItems}
-        </fieldset>
-      </div>`;
-};
-
-const renderOffersInTrip = (offers) => {
-  let offer = ``;
-  for (let i = 0; i < offers.title.length; i++) {
-    offer += `<div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage">
-          <label class="event__offer-label" for="event-offer-luggage-1">
-            <span class="event__offer-title">${offers.title[i]}</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">${offers.price[i]}</span>
-          </label>
-        </div>`;
-  }
-  return offer;
-};
-
-const renderPhotos = (photos) => {
-  let photoTemplate = photos.map((photo) =>
-    `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`).join(``);
-  if (photos.length > 0) {
-    return `<div class="event__photos-container">
-        <div class="event__photos-tape">
-        ${photoTemplate}
-          </div>
-      </div>`;
-  }
-  return ` `;
-
-};
-
-const renderDescript = (description, photos) => {
-  const destinationPhotos = renderPhotos(photos);
-  if (description.length > 0) {
-    return `<section class="event__section  event__section--destination">
-    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description"> ${description.join(` `)} </p>
-          ${destinationPhotos}
-    </section>`;
-  }
-  return ` `;
-};
+import {createEventTypeItemsTemplate, renderOffersInTrip, renderDescript} from "./form-edit.js";
 
 const createFormNewPointOfTripTemplate = (trip) => {
-  const {start, end, type, offers, cost, destination} = trip;
+  const {id, start, end, type, offers, cost, destination} = trip;
   const {city, description, photos} = destination;
   const starts = dayjs(start).format(`DD/MM/YY HH:MM`);
   const ends = dayjs(end).format(`DD/MM/YY HH:MM`);
   const destinationDescription = renderDescript(description, photos);
-  const eventsType = createEventTypeListItemsTemplate(type);
+  const eventsType = createEventTypeItemsTemplate(TYPES, type, id);
   const offersList = renderOffersInTrip(offers);
 
   return `<li class="trip-events__item"><form class="event event--edit" action="#" method="post">
@@ -119,6 +57,7 @@ const createFormNewPointOfTripTemplate = (trip) => {
 </form>
 </li> `;
 };
+
 export default class NewTrip extends Abstract {
   constructor(trip = BLANK_TRIP) {
     super();
