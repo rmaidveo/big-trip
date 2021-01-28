@@ -1,7 +1,8 @@
-import AbstractView from "./smart.js";
+import Abstract from "./smart.js";
 import Chart from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {TYPES, BAR_HEIGHT} from "../constants.js";
+import {getAllCost} from "../utils/trip.js";
 import dayjs from "dayjs";
 const MIN_IN_DAY = 24 * 60;
 
@@ -11,8 +12,8 @@ const getMoneyStats = (points) => {
   TYPES.forEach((type) => {
     const money = Object.values(points).reduce((accumulator, currentPoint) => {
       let accumulatorResult = accumulator;
-      if (currentPoint.type === type) {
-        accumulatorResult += currentPoint.total;
+      if (currentPoint.type === type.toLowerCase()) {
+        accumulatorResult += getAllCost(currentPoint.cost, currentPoint.offers);
       }
       return accumulatorResult;
     }, 0);
@@ -30,7 +31,7 @@ const getTypeStats = (points) => {
   TYPES.forEach((type) => {
     const times = Object.values(points).reduce((accumulator, currentPoint) => {
       let accumulatorResult = accumulator;
-      if (currentPoint.type === type) {
+      if (currentPoint.type === type.toLowerCase()) {
         accumulatorResult++;
       }
       return accumulatorResult;
@@ -49,7 +50,7 @@ const getSpendTimeStats = (points) => {
   TYPES.forEach((type) => {
     const minutes = Object.values(points).reduce((accumulator, currentPoint) => {
       let accumulatorResult = accumulator;
-      if (currentPoint.type === type) {
+      if (currentPoint.type === type.toLowerCase()) {
         accumulatorResult += dayjs(currentPoint.end).diff(dayjs(currentPoint.start), `minute`);
       }
       return accumulatorResult;
@@ -294,7 +295,7 @@ const createStatsTemplate = () => {
 </section>`;
 };
 
-export default class Stats extends AbstractView {
+export default class Stats extends Abstract {
   constructor(points) {
     super();
 
@@ -304,6 +305,7 @@ export default class Stats extends AbstractView {
     this._timeChart = null;
 
     this._setCharts();
+    this.hide();
   }
 
   getTemplate() {

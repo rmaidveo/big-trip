@@ -1,21 +1,7 @@
 import dayjs from "dayjs";
-import AbstractView from "./abstract.js";
-import {TIME_IN_MIN, TYPES, CITIES, OFFERS, DESCRIPTIONS} from "../constants.js";
-
-const BLANK_TRIP = {
-  start: dayjs().format(`DD/MM/YY HH:MM`),
-  end: dayjs().format(`DD/MM/YY HH:MM`),
-  type: TYPES[0],
-  offers: {
-    title: OFFERS[0],
-    price: 0
-  },
-  city: CITIES[0],
-  cost: 0,
-  total: 0,
-  destination: DESCRIPTIONS[0],
-  isFavorite: false
-};
+import Abstract from "./abstract.js";
+import {getAllCost, generateDuration} from "../utils/trip.js";
+import {TIME_IN_MIN, BLANK_TRIP} from "../constants.js";
 
 const appendZero = (value) => String(value).padStart(2, `0`);
 
@@ -46,8 +32,7 @@ const createOffers = (offers) => {
       if (!listOfOffers.includes(offers.title[i])) {
         listOfOffers += `<li class="event__offer">
   <span class="event__offer-title">${offers.title[i]}</span>
-    &plus;&euro;&nbsp;
-    <span class="event__offer-price">${offers.price[i]}</span>
+    &plus;&euro;&nbsp;<span class="event__offer-price">${offers.price[i]}</span>
   </li> `;
       }
     }
@@ -56,16 +41,19 @@ const createOffers = (offers) => {
 };
 
 const createTripEventsListItemTemplate = (trip) => {
-  const {start, type, city, duration, end, offers, isFavorite, total} = trip;
+  const {start, type, end, cost, offers, destination, isFavorite} = trip;
   const date = dayjs(start).format(`MMM DD`);
   const timeStart = dayjs(start).format(`HH:mm`);
   const timeEnd = dayjs(end).format(`HH:mm`);
   const favorite = isFavorite ? `event__favorite-btn--active` : ``;
+  const duration = generateDuration(start, end);
   const durationStrings = createDuration(duration);
   const offer = createOffers(offers);
-
+  const total = getAllCost(cost, offers);
+  const city = destination.city;
 
   return `<li class="trip-events__item">
+
   <div class="event">
     <time class="event__date" datetime="${start}">${date}</time>
     <div class="event__type">
@@ -74,9 +62,9 @@ const createTripEventsListItemTemplate = (trip) => {
     <h3 class="event__title"> ${type} ${city}</h3>
     <div class="event__schedule">
       <p class="event__time">
-        <time class="event__start-time" datetime="2019-03-18T12:25">${timeStart}</time>
+        <time class="event__start-time" datetime="${start}">${timeStart}</time>
         &mdash;
-        <time class="event__end-time" datetime="2019-03-18T13:35">${timeEnd}</time>
+        <time class="event__end-time" datetime="${end}">${timeEnd}</time>
       </p>
       <p class="event__duration"> ${durationStrings}</p>
     </div>
@@ -99,7 +87,7 @@ const createTripEventsListItemTemplate = (trip) => {
   </div>
 </li>`;
 };
-export default class TripListItems extends AbstractView {
+export default class TripListItems extends Abstract {
   constructor(trip = BLANK_TRIP) {
     super();
     this._trip = trip;
