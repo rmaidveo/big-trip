@@ -15,10 +15,10 @@ const pickersDelete = (...pickers) => {
   });
 };
 
-export const createEventTypeItemsTemplate = (allTypes, currentType, id) => {
+export const createEventTypeItemsTemplate = (allTypes, currentType, id, isDisabled) => {
   const types = allTypes.map((type) => `<div class="event__type-item">
             <input id="event-type-${type.toLowerCase()}-${id}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type.toLowerCase()}"
-             ${currentType === type ? `checked` : ``}>
+             ${currentType === type ? `checked` : ``} ${isDisabled ? `disabled` : ``}>
             <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-${id}">${capitalizeFirstLetter(type)}</label>
           </div>`).join(``);
 
@@ -42,13 +42,13 @@ ${types}
                   </div>`;
 };
 
-export const renderOffersInTrip = (offers) => {
+export const renderOffersInTrip = (offers, selectedOffers, isDisabled) => {
   let offer = ` `;
   const {title, price} = offers;
 
   for (let i = 0; i < title.length; i++) {
     offer += `<div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" type="checkbox" name="event-offer-luggage" data-offer-price="${price[i]}" data-offer-name="${title[i]}" ${offers.title.includes(title[i]) ? `checked` : ``}>
+            <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" type="checkbox" name="event-offer-luggage" data-offer-price="${price[i]}" data-offer-name="${title[i]}" ${selectedOffers.title.includes(title[i]) ? `checked` : ``} ${isDisabled ? `disabled` : ``}>
           <label class="event__offer-label" for="event-offer-luggage-${i}">
             <span class="event__offer-title">${title[i]}</span>
             &plus;&euro;&nbsp;
@@ -93,7 +93,7 @@ export const renderDescript = (description, photos) => {
   return ` `;
 };
 
-const createDestinationListTemplate = (options) => {
+export const createDestinationListTemplate = (options) => {
   if (options === null) {
     return ``;
   }
@@ -109,22 +109,27 @@ const createFormEditPointOfTripTemplate = (trip, destinationList, offersTypeList
     start,
     end,
     type,
-    offers,
     cost,
-    destination
+    destination,
+    offers,
+    isDisabled,
+    isSaving,
+    isDeleting
   } = trip;
-  const {city, description, photos} = destination;
+  let {city, description, photos} = destination;
   const optionsList = destinationList.map((i) =>{
     return Object.values(i)[0];
   });
   const TYPES = offersTypeList.map((i) =>{
     return Object.values(i)[0];
   });
+  const offersBlank = offersTypeList.find((offer) => offer.type === type).offers;
+
   const starts = dayjs(start).format(`DD/MM/YY HH:MM`);
   const ends = dayjs(end).format(`DD/MM/YY HH:MM`);
   const destinationDescription = renderDescript(description, photos);
-  const eventsType = createEventTypeItemsTemplate(TYPES, type, id);
-  const offersList = renderOffersInTrip(offers);
+  const eventsType = createEventTypeItemsTemplate(TYPES, type, id, isDisabled);
+  const offersList = renderOffersInTrip(offersBlank, offers, isDisabled);
   const options = createDestinationListTemplate(optionsList);
   return `<li class="trip-events__item"><form class="event event--edit" action="#" method="post">
 <header class="event__header">
@@ -133,27 +138,27 @@ const createFormEditPointOfTripTemplate = (trip, destinationList, offersTypeList
                     <label class="event__label  event__type-output" for="event-destination-${id}">
                      ${type}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-${id}" autocomplete="off">
+                    <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-${id}" autocomplete="off" required ${isDisabled ? `disabled` : ``}>
                     <datalist id="destination-list-${id}">
                        ${options}
                     </datalist>
                   </div>
   <div class="event__field-group  event__field-group--time">
     <label class="visually-hidden" for="event-start-time-${id}">From</label>
-    <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${starts}">
+    <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${starts}" ${isDisabled ? `disabled` : ``}>
     &mdash;
     <label class="visually-hidden" for="event-end-time-${id}">To</label>
-    <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${ends}">
+    <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${ends}"  ${isDisabled ? `disabled` : ``}>
   </div>
   <div class="event__field-group  event__field-group--price">
     <label class="event__label" for="event-price-${id}">
       <span class="visually-hidden">Price</span>
       &euro;
     </label>
-    <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${cost}" autocomplete="off">
+    <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${cost}" autocomplete="off" ${isDisabled ? `disabled` : ``}>
   </div>
-  <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-  <button class="event__reset-btn" type="reset">Delete</button>
+  <button class="event__save-btn  btn  btn--blue" type="submit"${isSaving || isDeleting ? `disabled` : ``} > ${isSaving ? `Saving...` : `Save`}</button>
+  <button class="event__reset-btn" type="reset" ${isDeleting || isSaving ? `disabled` : ``}> ${isDeleting ? `Deleting...` : `Delete`}</button>
   <button class="event__rollup-btn" type="button">
     <span class="visually-hidden">Open event</span>
   </button>
@@ -168,8 +173,6 @@ export default class EditTrip extends SmartView {
   constructor(trip = BLANK_TRIP, destinationModel, offersModel) {
     super();
     this._data = EditTrip.parseTripToData(trip);
-    this._destinationModel = destinationModel;
-    this._offersModel = offersModel;
     this._destinationList = destinationModel.getDestinations();
     this._offersList = offersModel.getOffers();
     this._datepickerstart = null;
@@ -357,10 +360,23 @@ export default class EditTrip extends SmartView {
   }
 
   static parseTripToData(trip) {
-    return JSON.parse(JSON.stringify(trip));
+    return JSON.parse(JSON.stringify(Object.assign(
+        {},
+        trip,
+        {
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false
+        }
+    )));
   }
 
   static parseDataToTrip(data) {
+    data = Object.assign({}, data);
+    delete data.isDisabled;
+    delete data.isSaving;
+    delete data.isDeleting;
+
     return JSON.parse(JSON.stringify(data));
   }
 }
