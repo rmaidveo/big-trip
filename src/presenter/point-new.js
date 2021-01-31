@@ -1,8 +1,8 @@
 import EditTrip from "../view/form-edit.js";
 import TripListItems from "../view/trip-list-items";
 import {remove, render, RenderPosition} from "../utils/render.js";
-import {UserAction, UpdateType} from "../constants.js";
-import {nanoid} from "nanoid";
+import {UserAction, UpdateType, BLANK_TRIP} from "../constants.js";
+
 
 export default class NewTrip {
   constructor(tripListContainer, changeData, destinationsModel, offersModel) {
@@ -23,7 +23,7 @@ export default class NewTrip {
       return;
     }
     this._tripComponent = new TripListItems();
-    this._tripEditComponent = new EditTrip(this._destinationsModel, this._offersModel);
+    this._tripEditComponent = new EditTrip(BLANK_TRIP, this._destinationsModel, this._offersModel);
     render(this._tripListContainer, this._tripEditComponent, RenderPosition.AFTERBEGIN);
     this._tripEditComponent.setOnFormSubmitSave(this._onFormSubmit);
     this._tripEditComponent.setOnDeleteClick(this._onDeleteClick);
@@ -40,18 +40,36 @@ export default class NewTrip {
 
     document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
+  setSaving() {
+    this._tripEditComponent.updateData({
+      isDisabled: true,
+      isSaving: true
+    });
+  }
 
+  setAborting() {
+    const resetFormState = () => {
+      this._tripEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false
+      });
+    };
+
+    this._tripEditComponent.shake(resetFormState);
+  }
   _onFormSubmit(point) {
     this._changeData(
         UserAction.ADD_POINT,
         UpdateType.MINOR,
-        Object.assign({id: nanoid()}, point)
+        point
     );
-    this.destroy();
+    // this.destroy();
   }
 
   _onDeleteClick() {
     this.destroy();
+    document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`, `disabled`);
   }
 
   _onEscKeyDown(evt) {

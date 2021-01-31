@@ -1,7 +1,7 @@
 import TripListItems from "../view/trip-list-items";
 import EditTrip from "../view/form-edit";
 import {render, RenderPosition, replace, remove} from "../utils/render.js";
-import {UserAction, UpdateType, Mode} from "../constants.js";
+import {UserAction, UpdateType, Mode, State} from "../constants.js";
 
 export default class Point {
   constructor(tripListContainer, changeData, changeMode, destinationsModel, offersModel) {
@@ -44,7 +44,8 @@ export default class Point {
     }
 
     if (this._mode === Mode.EDITING) {
-      replace(this._tripEditComponent, prevTripEditComponent);
+      replace(this._tripComponent, prevTripEditComponent);
+      this._mode = Mode.DEFAULT;
     }
 
     remove(prevTripComponent);
@@ -59,6 +60,34 @@ export default class Point {
   resetView() {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceFormToCard();
+    }
+  }
+
+  setViewState(state) {
+    const resetFormState = () => {
+      this._tripEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false
+      });
+    };
+    switch (state) {
+      case State.SAVING:
+        this._tripEditComponent.updateData({
+          isDisabled: true,
+          isSaving: true
+        });
+        break;
+      case State.DELETING:
+        this._tripEditComponent.updateData({
+          isDisabled: true,
+          isDeleting: true
+        });
+        break;
+      case State.ABORTING:
+        this._tripEditComponent.shake(resetFormState);
+        this._tripComponent.shake(resetFormState);
+        break;
     }
   }
 
@@ -112,7 +141,7 @@ export default class Point {
         UpdateType.MINOR,
         trip
     );
-    this._replaceFormToCard();
+
   }
 
   _onDeleteClick(trip) {

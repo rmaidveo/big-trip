@@ -7,7 +7,7 @@ import TripNewPresenter from "./point-new.js";
 import LoadingView from "../view/loading.js";
 import NewTripButtonfrom from "../view/new-trip-button.js";
 import {render, RenderPosition, remove} from "../utils/render.js";
-import {SortType, UpdateType, UserAction, FilterType} from "../constants.js";
+import {SortType, UpdateType, UserAction, FilterType, State} from "../constants.js";
 import {sortByTime, sortByPrice, sortByDay} from "../utils/trip.js";
 import {filter} from "../utils/filter.js";
 
@@ -35,7 +35,7 @@ export default class TripBoard {
     this._onModelEventChange = this._onModelEventChange.bind(this);
     this._onModeChange = this._onModeChange.bind(this);
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
-    this._tripNewPresenter = new TripNewPresenter(this._tripListComponent, this._onViewActionChange);
+    this._tripNewPresenter = new TripNewPresenter(this._tripListComponent, this._onViewActionChange, this._destinationsModel, this._offersModel);
   }
 
   init() {
@@ -64,6 +64,7 @@ export default class TripBoard {
     this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this._tripNewPresenter.init();
     remove(this._noTripComponent);
+    document.querySelector(`.trip-main__event-add-btn`).setAttribute(`disabled`, `disabled`);
   }
 
   _onSortTypeChange(sortType) {
@@ -85,15 +86,30 @@ export default class TripBoard {
   _onViewActionChange(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this._api.updatePoint(update).then((response) => {
+        this._tripPresenter[update.id].setViewState(State.SAVING);
+        this._api.updatePoint(update)
+        .then((response) => {
           this._tripsModel.updatePoint(updateType, response);
-        });
+        })
+         .catch(() => {
+           this._tripPresenter[update.id].setViewState(State.ABORTING);
+         });
         break;
       case UserAction.ADD_POINT:
-        this._tripsModel.addPoint(updateType, update);
+        this._tripNewPresenter.setSaving();
+        this._api.addPoint(update)
+        .then((response) => {
+          this._tripsModel.addPoint(updateType, response);
+        })
+        .catch(() => {
+          this._tripNewPresenter.setAborting();
+        });
         break;
       case UserAction.DELETE_POINT:
-        this._tripsModel.deletePoint(updateType, update);
+        this._tripPresenter[update.id].setViewState(State.DELETING);
+        this._api.deletePoint(update).then(() => {
+          this._tripsModel.deletePoint(updateType, update);
+        });
         break;
     }
   }
@@ -134,7 +150,7 @@ export default class TripBoard {
 
   _renderTrip(trip) {
     const tripPresenter = new TripPresenter(this._tripListComponent, this._onViewActionChange, this._onModeChange, this._destinationsModel, this._offersModel);
-    tripPresenter.init(trip, this._offersModel);
+    tripPresenter.init(trip);
     this._tripPresenter[trip.id] = tripPresenter;
   }
 
@@ -192,6 +208,7 @@ export default class TripBoard {
     this._renderAddNewTripButton();
     this._renderSort();
     this._renderTrips(trips);
+    document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`, `disabled`);
   }
 
   hide() {
