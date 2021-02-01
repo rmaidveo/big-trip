@@ -70,7 +70,7 @@ export default class Provider {
 
   updatedPoints(point) {
     if (isOnline()) {
-      return this._api.updatedPoints(point)
+      return this._api.updatePoint(point)
         .then((updatedPoint) => {
           this._store.setItem(updatedPoint.id, PointsModel.adaptToServer(updatedPoint));
           return updatedPoint;
