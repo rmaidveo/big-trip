@@ -1,8 +1,4 @@
-import dayjs from "dayjs";
-export const COST = {
-  MIN: 100,
-  MAX: 800
-};
+import dayjs from 'dayjs';
 
 export const TIME_IN_MIN = {
   MAXMIN: 1440,
@@ -15,7 +11,7 @@ export const SortType = {
   EVENT: `event`,
   TIME: `time`,
   PRICE: `price`,
-  OFFERS: `offers`
+  OFFERS: `offers`,
 };
 
 export const FilterType = {
@@ -73,3 +69,5 @@ export const State = {
   DELETING: `DELETING`,
   ABORTING: `ABORTING`
 };
+
+export const SHOW_TIME = 5000;

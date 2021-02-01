@@ -64,7 +64,6 @@ export default class NewTrip {
         UpdateType.MINOR,
         point
     );
-    // this.destroy();
   }
 
   _onDeleteClick() {
