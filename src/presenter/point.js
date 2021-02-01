@@ -1,7 +1,9 @@
 import TripListItems from "../view/trip-list-items";
 import EditTrip from "../view/form-edit";
+import {isOnline} from "../utils/common.js";
 import {render, RenderPosition, replace, remove} from "../utils/render.js";
 import {UserAction, UpdateType, Mode, State} from "../constants.js";
+import {toast} from "../utils/toast/toast.js";
 
 export default class Point {
   constructor(tripListContainer, changeData, changeMode, destinationsModel, offersModel) {
@@ -113,6 +115,10 @@ export default class Point {
   }
 
   _onFavoriteClick() {
+    if (!isOnline()) {
+      toast(`You can't edit point offline`);
+      return;
+    }
     this._changeData(
         UserAction.UPDATE_POINT,
         UpdateType.MINOR,
@@ -127,6 +133,10 @@ export default class Point {
   }
 
   _onEditClick() {
+    if (!isOnline()) {
+      toast(`You can't edit point offline`);
+      return;
+    }
     this._replaceCardToForm();
   }
 
@@ -136,15 +146,23 @@ export default class Point {
   }
 
   _onFormSubmit(trip) {
+    if (!isOnline()) {
+      toast(`You can't save point offline`);
+      return;
+    }
     this._changeData(
         UserAction.UPDATE_POINT,
         UpdateType.MINOR,
         trip
     );
-
   }
 
   _onDeleteClick(trip) {
+    if (!isOnline()) {
+      toast(`You can't delete point offline`);
+      return;
+    }
+
     this._changeData(
         UserAction.DELETE_POINT,
         UpdateType.MINOR,

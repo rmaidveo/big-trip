@@ -1,5 +1,7 @@
 import SiteMenu from "./view/site-menu.js";
-import {remove, render, RenderPosition} from "./utils/render.js";
+import {isOnline} from "./utils/common.js";
+import {toast} from "./utils/toast/toast.js";
+import {render, RenderPosition} from "./utils/render.js";
 import TripBoard from "./presenter/trip.js";
 import FilterPresenter from "./presenter/filter.js";
 import Points from "./model/points.js";
@@ -8,26 +10,36 @@ import Offers from "./model/offers.js";
 import Destinations from "./model/destination.js";
 import {MenuItem, UpdateType} from "./constants.js";
 import Stats from "./view/stats.js";
-import Api from "./api.js";
+import Api from "./api/api.js";
+import Store from "./api/store.js";
+import Provider from "./api/provider.js";
 
 const AUTHORIZATION = `Basic pQdgkWsrfRqm`;
 const END_POINT = `https://13.ecmascript.pages.academy/big-trip/.`;
+const STORE_PREFIX = `rmaidveo-bigtrip-localstorage`;
+const STORE_VER = `v13`;
+const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
+
 const tripsModel = new Points();
 const filterModel = new Filter();
 const offersModel = new Offers();
 const destinationsModel = new Destinations();
+const siteMenuComponent = new SiteMenu();
 
 const siteHeaderElement = document.querySelector(`.page-header`);
 const sitePageMainElement = document.querySelector(`.page-main .page-body__container`);
 const siteMenuHeaderElement = siteHeaderElement.querySelector(`.trip-main__trip-controls`);
 const siteMenuMainHeaderElement = siteHeaderElement.querySelector(`.trip-main`);
 const siteSortTripEvents = document.querySelector(`.trip-events`);
-const api = new Api(END_POINT, AUTHORIZATION);
-const tripBoard = new TripBoard(siteMenuMainHeaderElement, siteSortTripEvents, tripsModel, filterModel, offersModel, destinationsModel, api);
-const filterPresenter = new FilterPresenter(siteMenuHeaderElement, filterModel, tripsModel);
-const siteMenuComponent = new SiteMenu();
 let stats = null;
 let statisticsComponent = null;
+
+const api = new Api(END_POINT, AUTHORIZATION);
+const store = new Store(STORE_NAME, window.localStorage);
+const apiWithProvider = new Provider(api, store);
+const tripBoard = new TripBoard(siteMenuMainHeaderElement, siteSortTripEvents, tripsModel, filterModel, offersModel, destinationsModel, apiWithProvider);
+const filterPresenter = new FilterPresenter(siteMenuHeaderElement, filterModel, tripsModel);
+
 
 const onSiteMenuClick = (menuItem) => {
   menuItem = menuItem.textContent;
@@ -35,12 +47,18 @@ const onSiteMenuClick = (menuItem) => {
     case MenuItem.TABLE:
       statisticsComponent.hide();
       tripBoard.show();
+      if (sitePageMainElement.classList.contains(`no-after`)) {
+        sitePageMainElement.classList.remove(`no-after`);
+      }
       break;
     case MenuItem.STATS:
-      statisticsComponent = new Stats(stats);
+      statisticsComponent = new Stats(stats, offersModel);
       render(sitePageMainElement, statisticsComponent, RenderPosition.AFTERBEGIN);
       tripBoard.hide();
       statisticsComponent.show();
+      if (sitePageMainElement.classList.contains(`no-after`)) {
+        sitePageMainElement.classList.add(`no-after`);
+      }
       break;
   }
 };
@@ -48,7 +66,7 @@ const onSiteMenuClick = (menuItem) => {
 filterPresenter.init();
 tripBoard.init();
 
-Promise.all([api.getPoints(), api.getOffers(), api.getDestinations()])
+Promise.all([apiWithProvider.getPoints(), apiWithProvider.getOffers(), apiWithProvider.getDestinations()])
 .then(([apiPoints, apiOffers, apiDestination]) => {
   stats = apiPoints;
   offersModel.setOffers(apiOffers);
@@ -58,7 +76,9 @@ Promise.all([api.getPoints(), api.getOffers(), api.getDestinations()])
   siteMenuComponent.setMenuClick(onSiteMenuClick);
   document.querySelector(`.trip-main__event-add-btn`).addEventListener(`click`, (evt) => {
     evt.preventDefault();
-    tripBoard.createPoint();
+    if (!isOnline()) {
+      toast(`You can't create new point offline`);
+    } else{tripBoard.createPoint();}
   });
 })
 .catch(() => {
@@ -67,4 +87,14 @@ Promise.all([api.getPoints(), api.getOffers(), api.getDestinations()])
   siteMenuComponent.setMenuClick(onSiteMenuClick);
 });
 
+window.addEventListener(`load`, () => {
+  navigator.serviceWorker.register(`/sw.js`);
+});
+window.addEventListener(`online`, () => {
+  document.title = document.title.replace(` [offline]`, ``);
+  apiWithProvider.sync();
+});
 
+window.addEventListener(`offline`, () => {
+  document.title += ` [offline]`;
+});

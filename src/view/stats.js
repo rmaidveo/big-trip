@@ -1,15 +1,15 @@
 import Abstract from "./smart.js";
 import Chart from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import {TYPES, BAR_HEIGHT} from "../constants.js";
+import {BAR_HEIGHT} from "../constants.js";
 import {getAllCost} from "../utils/trip.js";
 import dayjs from "dayjs";
 const MIN_IN_DAY = 24 * 60;
 
-const getMoneyStats = (points) => {
+const getMoneyStats = (points, types) => {
   const result = new Map();
 
-  TYPES.forEach((type) => {
+  types.forEach((type) => {
     const money = Object.values(points).reduce((accumulator, currentPoint) => {
       let accumulatorResult = accumulator;
       if (currentPoint.type === type.toLowerCase()) {
@@ -25,10 +25,10 @@ const getMoneyStats = (points) => {
 
   return result;
 };
-const getTypeStats = (points) => {
+const getTypeStats = (points, types) => {
   const result = new Map();
 
-  TYPES.forEach((type) => {
+  types.forEach((type) => {
     const times = Object.values(points).reduce((accumulator, currentPoint) => {
       let accumulatorResult = accumulator;
       if (currentPoint.type === type.toLowerCase()) {
@@ -44,10 +44,10 @@ const getTypeStats = (points) => {
 
   return result;
 };
-const getSpendTimeStats = (points) => {
+const getSpendTimeStats = (points, types) => {
   const result = new Map();
 
-  TYPES.forEach((type) => {
+  types.forEach((type) => {
     const minutes = Object.values(points).reduce((accumulator, currentPoint) => {
       let accumulatorResult = accumulator;
       if (currentPoint.type === type.toLowerCase()) {
@@ -65,8 +65,8 @@ const getSpendTimeStats = (points) => {
   return result;
 };
 
-const renderMoneyChart = (ctx, points) => {
-  const typeMoney = getMoneyStats(points);
+const renderMoneyChart = (ctx, points, types) => {
+  const typeMoney = getMoneyStats(points, types);
   const data = Array.from(typeMoney.keys());
   const values = Array.from(typeMoney.values());
   ctx.height = BAR_HEIGHT * data.length;
@@ -141,8 +141,8 @@ const renderMoneyChart = (ctx, points) => {
   });
 };
 
-const renderTimeChart = (ctx, points) => {
-  const typeTime = getSpendTimeStats(points);
+const renderTimeChart = (ctx, points, types) => {
+  const typeTime = getSpendTimeStats(points, types);
   const data = Array.from(typeTime.keys());
   const values = Array.from(typeTime.values());
   ctx.height = BAR_HEIGHT * data.length;
@@ -216,8 +216,8 @@ const renderTimeChart = (ctx, points) => {
     },
   });
 };
-const renderTypeChart = (ctx, points) => {
-  const typeType = getTypeStats(points);
+const renderTypeChart = (ctx, points, types) => {
+  const typeType = getTypeStats(points, types);
   const data = Array.from(typeType.keys());
   const values = Array.from(typeType.values());
   ctx.height = BAR_HEIGHT * data.length;
@@ -308,9 +308,9 @@ const createStatsTemplate = () => {
 };
 
 export default class Stats extends Abstract {
-  constructor(points) {
+  constructor(points, offersModel) {
     super();
-
+    this._offersList = offersModel.getOffers();
     this._points = points.slice();
     this._moneyChart = null;
     this._typeChart = null;
@@ -324,13 +324,19 @@ export default class Stats extends Abstract {
     return createStatsTemplate();
   }
 
+  getTypes() {
+    return this._offersList.map((i) =>{
+      return Object.values(i)[0];
+    });
+  }
+
   _setCharts() {
     const moneyCtx = this.getElement().querySelector(`.statistics__chart--money`);
     const typeCtx = this.getElement().querySelector(`.statistics__chart--transport`);
     const timeCtx = this.getElement().querySelector(`.statistics__chart--time`);
 
-    this._moneyChart = renderMoneyChart(moneyCtx, this._points);
-    this._typeChart = renderTypeChart(typeCtx, this._points);
-    this._timeChart = renderTimeChart(timeCtx, this._points);
+    this._moneyChart = renderMoneyChart(moneyCtx, this._points, this.getTypes());
+    this._typeChart = renderTypeChart(typeCtx, this._points, this.getTypes());
+    this._timeChart = renderTimeChart(timeCtx, this._points, this.getTypes());
   }
 }
