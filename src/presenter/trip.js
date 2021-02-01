@@ -87,7 +87,7 @@ export default class TripBoard {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
         this._tripPresenter[update.id].setViewState(State.SAVING);
-        this._api.updatePoints(update)
+        this._api.updatedPoints(update)
         .then((response) => {
           this._tripsModel.updatePoint(updateType, response);
         })
