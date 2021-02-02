@@ -13,6 +13,7 @@ import Stats from "./view/stats.js";
 import Api from "./api/api.js";
 import Store from "./api/store.js";
 import Provider from "./api/provider.js";
+import InfoPresenter from "./presenter/trip-info.js";
 
 const AUTHORIZATION = `Basic pQdgkWsrfRqm`;
 const END_POINT = `https://13.ecmascript.pages.academy/big-trip/.`;
@@ -39,6 +40,7 @@ const store = new Store(STORE_NAME, window.localStorage);
 const apiWithProvider = new Provider(api, store);
 const tripBoard = new TripBoard(siteMenuMainHeaderElement, siteSortTripEvents, tripsModel, filterModel, offersModel, destinationsModel, apiWithProvider);
 const filterPresenter = new FilterPresenter(siteMenuHeaderElement, filterModel, tripsModel);
+const infoPresenter = new InfoPresenter(siteMenuMainHeaderElement, tripsModel);
 
 
 const onSiteMenuClick = (menuItem) => {
@@ -63,6 +65,7 @@ const onSiteMenuClick = (menuItem) => {
   }
 };
 
+infoPresenter.init();
 filterPresenter.init();
 tripBoard.init();
 
