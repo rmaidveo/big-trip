@@ -1,35 +1,36 @@
+import AbstractView from "./abstract";
 import dayjs from "dayjs";
-import Abstract from "./abstract.js";
-import {BLANK_TRIP} from "../constants.js";
 import {getAllCost} from "../utils/trip.js";
+import {getDestinationPointsSearch, getTotalPricePoints, getTotaloffersPoints} from "../utils/trips-info.js";
 
-const createTripInfoTemplate = (trip) => {
-  const {destination, start, end, cost, offers} = trip;
-  const starts = dayjs(start).format(`MMM DD`);
-  const ends = dayjs(end).format(`DD`);
+const createInfoTemplate = (points) => {
+  const pointsOfDestination = (getDestinationPointsSearch(points).length > 3) ?
+    `${getDestinationPointsSearch(points)[0]} &mdash; &mldr; &mdash; ${getDestinationPointsSearch(points)[getDestinationPointsSearch(points).length - 1]}`
+    : getDestinationPointsSearch(points).join(` &mdash; `);
+  const cost = getTotalPricePoints(points);
+  const offers = getTotaloffersPoints(points);
   const total = getAllCost(cost, offers);
-  const city = destination.city;
+  const start = dayjs(points[0].start).format(`MMM DD`);
+  const end = dayjs(points[points.length - 1].end).format(`MMM DD`);
 
   return `<section class="trip-main__trip-info  trip-info">
-<div class="trip-info__main">
-  <h1 class="trip-info__title">${city}</h1>
-
-  <p class="trip-info__dates">${starts}&nbsp;&mdash;&nbsp;${ends}</p>
-</div>
-
-<p class="trip-info__cost">
-  Total: &euro;&nbsp;<span class="trip-info__cost-value">${total}</span>
-</p>
-</section>`;
-
+    <div class="trip-info__main">
+      <h1 class="trip-info__title">${pointsOfDestination}</h1>
+      <p class="trip-info__dates">${start}&nbsp;&mdash;&nbsp;${end}</p>
+    </div>
+    <p class="trip-info__cost">
+      Total: &euro;&nbsp;<span class="trip-info__cost-value">${total}</span>
+    </p>
+  </section>`;
 };
-export default class TripInfo extends Abstract {
-  constructor(trip = BLANK_TRIP) {
+
+export default class TripInfo extends AbstractView {
+  constructor(points) {
     super();
-    this._trip = trip;
+    this._points = points;
   }
 
   getTemplate() {
-    return createTripInfoTemplate(this._trip);
+    return createInfoTemplate(this._points);
   }
 }

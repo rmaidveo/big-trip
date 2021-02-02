@@ -1,4 +1,3 @@
-import TripInfo from "../view/trip-info.js";
 import SiteSort from "../view/site-sort.js";
 import TripList from "../view/trip-list";
 import NoTrip from "../view/no-trips.js";
@@ -18,7 +17,6 @@ export default class TripBoard {
     this._filterModel = filterModel;
     this._offersModel = offersModel;
     this._destinationsModel = destinationsModel;
-    this._offersModel = offersModel;
     this._api = api;
     this._menuContainer = menuContainer;
     this._boardContainer = boardContainer;
@@ -30,7 +28,6 @@ export default class TripBoard {
     this._noTripComponent = new NoTrip();
     this._loadingComponent = new LoadingView();
     this._tripPresenter = {};
-    this._tripInfo = {};
     this._onViewActionChange = this._onViewActionChange.bind(this);
     this._onModelEventChange = this._onModelEventChange.bind(this);
     this._onModeChange = this._onModeChange.bind(this);
@@ -154,12 +151,6 @@ export default class TripBoard {
     this._tripPresenter[trip.id] = tripPresenter;
   }
 
-  _renderTripInfo(trip) {
-    const tripInfo = new TripInfo(trip);
-    this._tripInfo = tripInfo;
-    render(this._menuContainer, this._tripInfo, RenderPosition.AFTERBEGIN);
-  }
-
   _renderTrips(trips) {
     trips.forEach((trip) => this._renderTrip(trip));
   }
@@ -183,7 +174,6 @@ export default class TripBoard {
     remove(this._tripSortComponent);
     remove(this._noTripComponent);
     remove(this._loadingComponent);
-    remove(this._tripInfo);
 
     if (resetSortType) {
       this._currentSort = SortType.DEFAULT;
@@ -204,7 +194,6 @@ export default class TripBoard {
       return;
     }
 
-    this._renderTripInfo(trips[0]);
     this._renderAddNewTripButton();
     this._renderSort();
     this._renderTrips(trips);
