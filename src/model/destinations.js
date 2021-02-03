@@ -15,7 +15,7 @@ export default class Destinations {
   static adaptToClient({name, description, pictures}) {
     return {
       city: name,
-      description: [description],
+      descriptions: [description],
       photos: pictures,
     };
   }

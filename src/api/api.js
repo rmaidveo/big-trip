@@ -1,6 +1,6 @@
 import PointsModel from "../model/points.js";
 import OffersModel from "../model/offers.js";
-import DestinationsModel from "../model/destination.js";
+import DestinationsModel from "../model/destinations.js";
 import {Method, SuccessHTTPStatusRange} from "./constants.js";
 
 export default class Api {

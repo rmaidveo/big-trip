@@ -15,12 +15,12 @@ export const getTotalPricePoints = (points) => {
 };
 export const getTotaloffersPoints = (points) => {
   const offers = {
-    price: [],
-    title: []
+    prices: [],
+    titles: []
   };
   for (const point of points) {
-    offers.price = offers.price.concat(point.offers.price);
-    offers.title = offers.title.concat(point.offers.title);
+    offers.prices = offers.prices.concat(point.offers.prices);
+    offers.titles = offers.titles.concat(point.offers.titles);
   }
   return offers;
 };

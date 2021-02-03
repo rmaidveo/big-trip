@@ -44,19 +44,19 @@ ${types}
 
 export const renderOffersInTrip = (offers, selectedOffers, isDisabled) => {
   let offer = ` `;
-  const {title, price} = offers;
+  const {titles, prices} = offers;
 
-  for (let i = 0; i < title.length; i++) {
+  for (let i = 0; i < titles.length; i++) {
     offer += `<div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" type="checkbox" name="event-offer-luggage" data-offer-price="${price[i]}" data-offer-name="${title[i]}" ${selectedOffers.title.includes(title[i]) ? `checked` : ``} ${isDisabled ? `disabled` : ``}>
+            <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${i}" type="checkbox" name="event-offer-luggage" data-offer-price="${prices[i]}" data-offer-name="${titles[i]}" ${selectedOffers.titles.includes(titles[i]) ? `checked` : ``} ${isDisabled ? `disabled` : ``}>
           <label class="event__offer-label" for="event-offer-luggage-${i}">
-            <span class="event__offer-title">${title[i]}</span>
+            <span class="event__offer-title">${titles[i]}</span>
             &plus;&euro;&nbsp;
-            <span class="event__offer-price">${price[i]}</span>
+            <span class="event__offer-price">${prices[i]}</span>
           </label>
         </div>`;
   }
-  if (title.length > 0) {
+  if (titles.length > 0) {
     return ` <section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
     <div class="event__available-offers">
@@ -81,12 +81,12 @@ export const renderPhotos = (photos) => {
 
 };
 
-export const renderDescript = (description, photos) => {
+export const renderDescript = (descriptions, photos) => {
   const destinationPhotos = renderPhotos(photos);
-  if (description.length > 0) {
+  if (descriptions.length > 0) {
     return `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description"> ${description.join(` `)} </p>
+    <p class="event__destination-description"> ${descriptions.join(` `)} </p>
           ${destinationPhotos}
     </section>`;
   }
@@ -116,7 +116,7 @@ const createFormEditPointOfTripTemplate = (trip, destinationList, offersTypeList
     isSaving,
     isDeleting
   } = trip;
-  let {city, description, photos} = destination;
+  let {city, descriptions, photos} = destination;
   const optionsList = destinationList.map((i) =>{
     return Object.values(i)[0];
   });
@@ -127,7 +127,7 @@ const createFormEditPointOfTripTemplate = (trip, destinationList, offersTypeList
 
   const starts = dayjs(start).format(`DD/MM/YY HH:MM`);
   const ends = dayjs(end).format(`DD/MM/YY HH:MM`);
-  const destinationDescription = renderDescript(description, photos);
+  const destinationDescription = renderDescript(descriptions, photos);
   const eventsType = createEventTypeItemsTemplate(TYPES, type, id, isDisabled);
   const offersList = renderOffersInTrip(offersBlank, offers, isDisabled);
   const options = createDestinationListTemplate(optionsList);
@@ -169,10 +169,10 @@ const createFormEditPointOfTripTemplate = (trip, destinationList, offersTypeList
 </form>
 </li> `;
 };
-export default class EditTrip extends SmartView {
+export default class EditPoint extends SmartView {
   constructor(trip = BLANK_TRIP, destinationModel, offersModel) {
     super();
-    this._data = EditTrip.parseTripToData(trip);
+    this._data = EditPoint.parseTripToData(trip);
     this._destinationList = destinationModel.getDestinations();
     this._offersList = offersModel.getOffers();
     this._datepickerstart = null;
@@ -184,7 +184,7 @@ export default class EditTrip extends SmartView {
     this._onStartDateChange = this._onStartDateChange.bind(this);
     this._onEndDateChange = this._onEndDateChange.bind(this);
     this._onCostChange = this._onCostChange.bind(this);
-    this._formOnDeleteClick = this._formOnDeleteClick.bind(this);
+    this._onFormDeleteClick = this._onFormDeleteClick.bind(this);
     this._onOffersInputChange = this._onOffersInputChange.bind(this);
     this._setInnerHandlers();
     this._setStartDatepicker();
@@ -199,7 +199,7 @@ export default class EditTrip extends SmartView {
 
   reset(trip) {
     this.updateData(
-        EditTrip.parseTripToData(trip)
+        EditPoint.parseTripToData(trip)
     );
   }
 
@@ -209,7 +209,7 @@ export default class EditTrip extends SmartView {
 
   _onClickTripEdit(evt) {
     evt.preventDefault();
-    this._callback.editClick(EditTrip.parseDataToTrip(this._data));
+    this._callback.editClick(EditPoint.parseDataToTrip(this._data));
   }
 
   setOnClickTripEdit(callback) {
@@ -219,7 +219,7 @@ export default class EditTrip extends SmartView {
 
   _onFormSubmitSave(evt) {
     evt.preventDefault();
-    this._callback.submitClick(EditTrip.parseDataToTrip(this._data));
+    this._callback.submitClick(EditPoint.parseDataToTrip(this._data));
   }
 
   setOnFormSubmitSave(callback) {
@@ -250,7 +250,7 @@ export default class EditTrip extends SmartView {
     this.updateData({
       destination: {
         city: newCity,
-        description: [this._destinationList.find((descriptionCity) => descriptionCity.city === newCity).description],
+        descriptions: [this._destinationList.find((descriptionCity) => descriptionCity.city === newCity).descriptions],
         photos: this._destinationList.find((photoCity) => photoCity.city === newCity).photos
       }
     });
@@ -264,8 +264,8 @@ export default class EditTrip extends SmartView {
     const checkedOffersTitle = Array.from(checkedOffers).map((checkedOffer) => checkedOffer.dataset.offerName);
     const checkedOffersPrice = Array.from(checkedOffers).map((checkedOffer) => Number(checkedOffer.dataset.offerPrice));
     this.updateData({offers: {
-      title: checkedOffersTitle,
-      price: checkedOffersPrice
+      titles: checkedOffersTitle,
+      prices: checkedOffersPrice
     }
     });
   }
@@ -349,14 +349,14 @@ export default class EditTrip extends SmartView {
       .addEventListener(`change`, this._onCostChange);
   }
 
-  _formOnDeleteClick(evt) {
+  _onFormDeleteClick(evt) {
     evt.preventDefault();
-    this._callback.deleteClick(EditTrip.parseDataToTrip(this._data));
+    this._callback.deleteClick(EditPoint.parseDataToTrip(this._data));
   }
 
   setOnDeleteClick(callback) {
     this._callback.deleteClick = callback;
-    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formOnDeleteClick);
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._onFormDeleteClick);
   }
 
   static parseTripToData(trip) {

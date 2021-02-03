@@ -1,11 +1,8 @@
 import dayjs from "dayjs";
 
 export const getAllCost = (cost, offers) => {
-  let allcost = cost;
-  for (let i = 0; i < offers.price.length; i++) {
-    allcost += offers.price[i];
-  }
-  return allcost;
+  const reducer = (acc, currentValue) => acc + currentValue;
+  return offers.prices.reduce(reducer, cost);
 };
 
 export const generateDuration = (starts, ends) => {

@@ -1,5 +1,5 @@
 import TripListItems from "../view/trip-list-items";
-import EditTrip from "../view/form-edit";
+import EditPoint from "../view/edit-point";
 import {isOnline} from "../utils/common.js";
 import {render, RenderPosition, replace, remove} from "../utils/render.js";
 import {UserAction, UpdateType, Mode, State} from "../constants.js";
@@ -12,8 +12,8 @@ export default class Point {
     this._destinationsModel = destinationsModel;
     this._offersModel = offersModel;
     this._tripListContainer = tripListContainer;
-    this._tripComponent = null;
-    this._tripEditComponent = null;
+    this._pointComponent = null;
+    this._pointEditComponent = null;
     this._mode = Mode.DEFAULT;
     this._onFavoriteClick = this._onFavoriteClick.bind(this);
     this._onEditClick = this._onEditClick.bind(this);
@@ -23,40 +23,40 @@ export default class Point {
     this._onDeleteClick = this._onDeleteClick.bind(this);
   }
 
-  init(trip) {
-    this._trip = trip;
-    const prevTripComponent = this._tripComponent;
-    const prevTripEditComponent = this._tripEditComponent;
-    this._tripComponent = new TripListItems(this._trip);
-    this._tripEditComponent = new EditTrip(this._trip, this._destinationsModel, this._offersModel);
-    this._tripComponent.setOnFavoriteClick(this._onFavoriteClick);
-    this._tripComponent.setOnClickTripPoint(this._onEditClick);
-    this._tripEditComponent.setOnFormSubmitSave(this._onFormSubmit);
-    this._tripEditComponent.setOnClickTripEdit(this._onPoinClick);
-    this._tripEditComponent.setOnDeleteClick(this._onDeleteClick);
+  init(point) {
+    this._point = point;
+    const prevPointComponent = this._pointComponent;
+    const prevPointEditComponent = this._pointEditComponent;
+    this._pointComponent = new TripListItems(this._point);
+    this._pointEditComponent = new EditPoint(this._point, this._destinationsModel, this._offersModel);
+    this._pointComponent.setOnFavoriteClick(this._onFavoriteClick);
+    this._pointComponent.setOnClickTripPoint(this._onEditClick);
+    this._pointEditComponent.setOnFormSubmitSave(this._onFormSubmit);
+    this._pointEditComponent.setOnClickTripEdit(this._onPoinClick);
+    this._pointEditComponent.setOnDeleteClick(this._onDeleteClick);
 
 
-    if (prevTripComponent === null || prevTripEditComponent === null) {
-      render(this._tripListContainer, this._tripComponent, RenderPosition.BEFOREEND);
+    if (prevPointComponent === null || prevPointEditComponent === null) {
+      render(this._tripListContainer, this._pointComponent, RenderPosition.BEFOREEND);
       return;
     }
 
     if (this._mode === Mode.DEFAULT) {
-      replace(this._tripComponent, prevTripComponent);
+      replace(this._pointComponent, prevPointComponent);
     }
 
     if (this._mode === Mode.EDITING) {
-      replace(this._tripComponent, prevTripEditComponent);
+      replace(this._pointComponent, prevPointEditComponent);
       this._mode = Mode.DEFAULT;
     }
 
-    remove(prevTripComponent);
-    remove(prevTripEditComponent);
+    remove(prevPointComponent);
+    remove(prevPointEditComponent);
   }
 
   destroy() {
-    remove(this._tripComponent);
-    remove(this._tripEditComponent);
+    remove(this._pointComponent);
+    remove(this._pointEditComponent);
   }
 
   resetView() {
@@ -67,7 +67,7 @@ export default class Point {
 
   setViewState(state) {
     const resetFormState = () => {
-      this._tripEditComponent.updateData({
+      this._pointEditComponent.updateData({
         isDisabled: false,
         isSaving: false,
         isDeleting: false
@@ -75,33 +75,33 @@ export default class Point {
     };
     switch (state) {
       case State.SAVING:
-        this._tripEditComponent.updateData({
+        this._pointEditComponent.updateData({
           isDisabled: true,
           isSaving: true
         });
         break;
       case State.DELETING:
-        this._tripEditComponent.updateData({
+        this._pointEditComponent.updateData({
           isDisabled: true,
           isDeleting: true
         });
         break;
       case State.ABORTING:
-        this._tripEditComponent.shake(resetFormState);
-        this._tripComponent.shake(resetFormState);
+        this._pointEditComponent.shake(resetFormState);
+        this._pointComponent.shake(resetFormState);
         break;
     }
   }
 
   _replaceCardToForm() {
-    replace(this._tripEditComponent, this._tripComponent);
+    replace(this._pointEditComponent, this._pointComponent);
     document.addEventListener(`keydown`, this._onEscKeyDown);
     this._changeMode();
     this._mode = Mode.EDITING;
   }
 
   _replaceFormToCard() {
-    replace(this._tripComponent, this._tripEditComponent);
+    replace(this._pointComponent, this._pointEditComponent);
     document.removeEventListener(`keydown`, this._onEscKeyDown);
     this._mode = Mode.DEFAULT;
   }
@@ -109,7 +109,7 @@ export default class Point {
   _onEscKeyDown(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
-      this._tripEditComponent.reset(this._trip);
+      this._pointEditComponent.reset(this._point);
       this._replaceFormToCard();
     }
   }
@@ -124,9 +124,9 @@ export default class Point {
         UpdateType.MINOR,
         Object.assign(
             {},
-            this._trip,
+            this._point,
             {
-              isFavorite: !this._trip.isFavorite
+              isFavorite: !this._point.isFavorite
             }
         )
     );
@@ -140,12 +140,12 @@ export default class Point {
     this._replaceCardToForm();
   }
 
-  _onPoinClick(trip) {
-    this._changeData(trip);
+  _onPoinClick(point) {
+    this._changeData(point);
     this._replaceFormToCard();
   }
 
-  _onFormSubmit(trip) {
+  _onFormSubmit(point) {
     if (!isOnline()) {
       toast(`You can't save point offline`);
       return;
@@ -153,11 +153,11 @@ export default class Point {
     this._changeData(
         UserAction.UPDATE_POINT,
         UpdateType.MINOR,
-        trip
+        point
     );
   }
 
-  _onDeleteClick(trip) {
+  _onDeleteClick(point) {
     if (!isOnline()) {
       toast(`You can't delete point offline`);
       return;
@@ -166,7 +166,7 @@ export default class Point {
     this._changeData(
         UserAction.DELETE_POINT,
         UpdateType.MINOR,
-        trip
+        point
     );
   }
 }

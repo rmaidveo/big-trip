@@ -1,17 +1,17 @@
-import SiteSort from "../view/site-sort.js";
-import TripList from "../view/trip-list";
-import NoTrip from "../view/no-trips.js";
-import TripPresenter from "./point.js";
-import TripNewPresenter from "./point-new.js";
-import LoadingView from "../view/loading.js";
-import NewTripButtonfrom from "../view/new-trip-button.js";
 import {render, RenderPosition, remove} from "../utils/render.js";
 import {SortType, UpdateType, UserAction, FilterType, State} from "../constants.js";
 import {sortByTime, sortByPrice, sortByDay} from "../utils/trip.js";
 import {filter} from "../utils/filter.js";
+import SiteSortView from "../view/site-sort.js";
+import TripListView from "../view/trip-list";
+import NoTripView from "../view/no-trip.js";
+import PointPresenter from "./point.js";
+import PointNewPresenter from "./point-new.js";
+import LoadingView from "../view/loading.js";
+import NewPointAddButtonfrom from "../view/new-point-button.js";
 
 
-export default class TripBoard {
+export default class Trip {
   constructor(menuContainer, boardContainer, tripsModel, filterModel, offersModel, destinationsModel, api) {
     this._tripsModel = tripsModel;
     this._filterModel = filterModel;
@@ -20,19 +20,19 @@ export default class TripBoard {
     this._api = api;
     this._menuContainer = menuContainer;
     this._boardContainer = boardContainer;
-    this._tripListComponent = new TripList();
+    this._tripListComponent = new TripListView();
     this._currentSort = SortType.DEFAULT;
     this._isLoading = true;
     this._tripSortComponent = null;
-    this._addNewTripButton = new NewTripButtonfrom();
-    this._noTripComponent = new NoTrip();
+    this._addNewPointButton = new NewPointAddButtonfrom();
+    this._noTripComponent = new NoTripView();
     this._loadingComponent = new LoadingView();
-    this._tripPresenter = {};
+    this._pointPresenter = {};
     this._onViewActionChange = this._onViewActionChange.bind(this);
     this._onModelEventChange = this._onModelEventChange.bind(this);
     this._onModeChange = this._onModeChange.bind(this);
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
-    this._tripNewPresenter = new TripNewPresenter(this._tripListComponent, this._onViewActionChange, this._destinationsModel, this._offersModel);
+    this._pointNewPresenter = new PointNewPresenter(this._tripListComponent, this._onViewActionChange, this._destinationsModel, this._offersModel);
   }
 
   init() {
@@ -59,7 +59,7 @@ export default class TripBoard {
   createPoint() {
     this._currentSort = SortType.DEFAULT;
     this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this._tripNewPresenter.init();
+    this._pointNewPresenter.init();
     remove(this._noTripComponent);
     document.querySelector(`.trip-main__event-add-btn`).setAttribute(`disabled`, `disabled`);
   }
@@ -74,36 +74,36 @@ export default class TripBoard {
   }
 
   _onModeChange() {
-    this._tripNewPresenter.destroy();
+    this._pointNewPresenter.destroy();
     Object
-      .values(this._tripPresenter)
+      .values(this._pointPresenter)
       .forEach((presenter) => presenter.resetView());
   }
 
   _onViewActionChange(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this._tripPresenter[update.id].setViewState(State.SAVING);
+        this._pointPresenter[update.id].setViewState(State.SAVING);
         this._api.updatedPoints(update)
         .then((response) => {
           this._tripsModel.updatePoint(updateType, response);
         })
          .catch(() => {
-           this._tripPresenter[update.id].setViewState(State.ABORTING);
+           this._pointPresenter[update.id].setViewState(State.ABORTING);
          });
         break;
       case UserAction.ADD_POINT:
-        this._tripNewPresenter.setSaving();
+        this._pointNewPresenter.setSaving();
         this._api.addPoint(update)
         .then((response) => {
           this._tripsModel.addPoint(updateType, response);
         })
         .catch(() => {
-          this._tripNewPresenter.setAborting();
+          this._pointNewPresenter.setAborting();
         });
         break;
       case UserAction.DELETE_POINT:
-        this._tripPresenter[update.id].setViewState(State.DELETING);
+        this._pointPresenter[update.id].setViewState(State.DELETING);
         this._api.deletePoint(update).then(() => {
           this._tripsModel.deletePoint(updateType, update);
         });
@@ -114,7 +114,7 @@ export default class TripBoard {
   _onModelEventChange(updateType, data) {
     switch (updateType) {
       case UpdateType.PATCH:
-        this._tripPresenter[data.id].init(data, this._offersModel);
+        this._pointPresenter[data.id].init(data, this._offersModel);
         break;
       case UpdateType.MINOR:
         this._clearBoard();
@@ -136,19 +136,19 @@ export default class TripBoard {
     if (this._tripSortComponent !== null) {
       this._tripSortComponent = null;
     }
-    this._tripSortComponent = new SiteSort(this._currentSort);
+    this._tripSortComponent = new SiteSortView(this._currentSort);
     this._tripSortComponent.setOnSortTypeClick(this._onSortTypeChange);
     render(this._boardContainer, this._tripSortComponent, RenderPosition.AFTERBEGIN);
   }
 
-  _renderAddNewTripButton() {
-    render(this._menuContainer, this._addNewTripButton, RenderPosition.BEFOREEND);
+  _renderAddNewPointButton() {
+    render(this._menuContainer, this._addNewPointButton, RenderPosition.BEFOREEND);
   }
 
   _renderTrip(trip) {
-    const tripPresenter = new TripPresenter(this._tripListComponent, this._onViewActionChange, this._onModeChange, this._destinationsModel, this._offersModel);
-    tripPresenter.init(trip);
-    this._tripPresenter[trip.id] = tripPresenter;
+    const pointPresenter = new PointPresenter(this._tripListComponent, this._onViewActionChange, this._onModeChange, this._destinationsModel, this._offersModel);
+    pointPresenter.init(trip);
+    this._pointPresenter[trip.id] = pointPresenter;
   }
 
   _renderTrips(trips) {
@@ -165,11 +165,11 @@ export default class TripBoard {
   }
 
   _clearBoard({resetSortType = false} = {}) {
-    this._tripNewPresenter.destroy();
+    this._pointNewPresenter.destroy();
     Object
-      .values(this._tripPresenter)
+      .values(this._pointPresenter)
       .forEach((presenter) => presenter.destroy());
-    this._tripPresenter = {};
+    this._pointPresenter = {};
 
     remove(this._tripSortComponent);
     remove(this._noTripComponent);
@@ -194,7 +194,7 @@ export default class TripBoard {
       return;
     }
 
-    this._renderAddNewTripButton();
+    this._renderAddNewPointButton();
     this._renderSort();
     this._renderTrips(trips);
     document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`, `disabled`);

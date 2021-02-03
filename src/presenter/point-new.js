@@ -1,10 +1,10 @@
-import EditTrip from "../view/form-edit.js";
-import TripListItems from "../view/trip-list-items";
+import EditTripView from "../view/edit-point.js";
+import TripListItemsView from "../view/trip-list-items";
 import {remove, render, RenderPosition} from "../utils/render.js";
 import {UserAction, UpdateType, BLANK_TRIP} from "../constants.js";
 
 
-export default class NewTrip {
+export default class NewPoint {
   constructor(tripListContainer, changeData, destinationsModel, offersModel) {
     this._tripListContainer = tripListContainer;
     this._destinationsModel = destinationsModel;
@@ -22,8 +22,8 @@ export default class NewTrip {
     if (this._tripEditComponent !== null) {
       return;
     }
-    this._tripComponent = new TripListItems();
-    this._tripEditComponent = new EditTrip(BLANK_TRIP, this._destinationsModel, this._offersModel);
+    this._tripComponent = new TripListItemsView();
+    this._tripEditComponent = new EditTripView(BLANK_TRIP, this._destinationsModel, this._offersModel);
     render(this._tripListContainer, this._tripEditComponent, RenderPosition.AFTERBEGIN);
     this._tripEditComponent.setOnFormSubmitSave(this._onFormSubmit);
     this._tripEditComponent.setOnDeleteClick(this._onDeleteClick);

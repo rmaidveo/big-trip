@@ -1,7 +1,7 @@
 import AbstractView from "./abstract";
 import dayjs from "dayjs";
 import {getAllCost} from "../utils/trip.js";
-import {getDestinationPointsSearch, getTotalPricePoints, getTotaloffersPoints} from "../utils/trips-info.js";
+import {getDestinationPointsSearch, getTotalPricePoints, getTotaloffersPoints} from "../utils/trip-info.js";
 
 const createInfoTemplate = (points) => {
   const pointsOfDestination = (getDestinationPointsSearch(points).length > 3) ?

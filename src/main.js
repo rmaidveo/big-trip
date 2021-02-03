@@ -1,19 +1,20 @@
-import SiteMenu from "./view/site-menu.js";
 import {isOnline} from "./utils/common.js";
 import {toast} from "./utils/toast/toast.js";
 import {render, RenderPosition} from "./utils/render.js";
-import TripBoard from "./presenter/trip.js";
-import FilterPresenter from "./presenter/filter.js";
-import Points from "./model/points.js";
-import Filter from "./model/filter.js";
-import Offers from "./model/offers.js";
-import Destinations from "./model/destination.js";
 import {MenuItem, UpdateType} from "./constants.js";
-import Stats from "./view/stats.js";
+import TripPresenter from "./presenter/trip.js";
+import FilterPresenter from "./presenter/filter.js";
+import TripInfoPresenter from "./presenter/trip-info.js";
+import PointsModel from "./model/points.js";
+import FilterModel from "./model/filter.js";
+import OffersModel from "./model/offers.js";
+import DestinationsModel from "./model/destinations.js";
+import StatsView from "./view/stats.js";
+import SiteMenuView from "./view/site-menu.js";
 import Api from "./api/api.js";
 import Store from "./api/store.js";
 import Provider from "./api/provider.js";
-import InfoPresenter from "./presenter/trip-info.js";
+
 
 const AUTHORIZATION = `Basic pQdgkWsrfRqm`;
 const END_POINT = `https://13.ecmascript.pages.academy/big-trip/.`;
@@ -21,11 +22,11 @@ const STORE_PREFIX = `rmaidveo-bigtrip-localstorage`;
 const STORE_VER = `v13`;
 const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
 
-const tripsModel = new Points();
-const filterModel = new Filter();
-const offersModel = new Offers();
-const destinationsModel = new Destinations();
-const siteMenuComponent = new SiteMenu();
+const tripsModel = new PointsModel();
+const filterModel = new FilterModel();
+const offersModel = new OffersModel();
+const destinationsModel = new DestinationsModel();
+const siteMenuComponent = new SiteMenuView();
 
 const siteHeaderElement = document.querySelector(`.page-header`);
 const sitePageMainElement = document.querySelector(`.page-main .page-body__container`);
@@ -38,9 +39,9 @@ let statisticsComponent = null;
 const api = new Api(END_POINT, AUTHORIZATION);
 const store = new Store(STORE_NAME, window.localStorage);
 const apiWithProvider = new Provider(api, store);
-const tripBoard = new TripBoard(siteMenuMainHeaderElement, siteSortTripEvents, tripsModel, filterModel, offersModel, destinationsModel, apiWithProvider);
+const tripPresenter = new TripPresenter(siteMenuMainHeaderElement, siteSortTripEvents, tripsModel, filterModel, offersModel, destinationsModel, apiWithProvider);
 const filterPresenter = new FilterPresenter(siteMenuHeaderElement, filterModel, tripsModel);
-const infoPresenter = new InfoPresenter(siteMenuMainHeaderElement, tripsModel);
+const tripInfoPresenter = new TripInfoPresenter(siteMenuMainHeaderElement, tripsModel);
 
 
 const onSiteMenuClick = (menuItem) => {
@@ -48,15 +49,15 @@ const onSiteMenuClick = (menuItem) => {
   switch (menuItem) {
     case MenuItem.TABLE:
       statisticsComponent.hide();
-      tripBoard.show();
+      tripPresenter.show();
       if (sitePageMainElement.classList.contains(`no-after`)) {
         sitePageMainElement.classList.remove(`no-after`);
       }
       break;
     case MenuItem.STATS:
-      statisticsComponent = new Stats(stats, offersModel);
+      statisticsComponent = new StatsView(stats, offersModel);
       render(sitePageMainElement, statisticsComponent, RenderPosition.AFTERBEGIN);
-      tripBoard.hide();
+      tripPresenter.hide();
       statisticsComponent.show();
       if (sitePageMainElement.classList.contains(`no-after`)) {
         sitePageMainElement.classList.add(`no-after`);
@@ -65,9 +66,9 @@ const onSiteMenuClick = (menuItem) => {
   }
 };
 
-infoPresenter.init();
+tripInfoPresenter.init();
 filterPresenter.init();
-tripBoard.init();
+tripPresenter.init();
 
 Promise.all([apiWithProvider.getPoints(), apiWithProvider.getOffers(), apiWithProvider.getDestinations()])
 .then(([apiPoints, apiOffers, apiDestination]) => {
@@ -81,7 +82,7 @@ Promise.all([apiWithProvider.getPoints(), apiWithProvider.getOffers(), apiWithPr
     evt.preventDefault();
     if (!isOnline()) {
       toast(`You can't create new point offline`);
-    } else{tripBoard.createPoint();}
+    } else{tripPresenter.createPoint();}
   });
 })
 .catch(() => {

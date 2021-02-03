@@ -24,7 +24,7 @@ export default class Info {
     if (this._pointsModel.getPoints().length === 0) {
       return;
     }
-    const points = this._pointsModel.getPoints().slice().sort(sortByDay);
+    const points = this._pointsModel.getPoints().slice().sort(sortByDay());
 
     this._tripInfoComponent = new TripInfoView(points);
     render(this._headerContainer, this._tripInfoComponent, RenderPosition.AFTERBEGIN);

@@ -62,14 +62,14 @@ export default class Points extends Observer {
           end: dayjs(point.date_to),
           destination: {
             city: point.destination.name,
-            description: [point.destination.description],
+            descriptions: [point.destination.description],
             photos: point.destination.pictures,
           },
           cost: point.base_price,
           isFavorite: point.is_favorite,
           offers: {
-            title: point.offers.map((ar) => ar.title),
-            price: point.offers.map((ar) => ar.price)
+            titles: point.offers.map((ar) => ar.title),
+            prices: point.offers.map((ar) => ar.price)
           }
         });
     delete adaptedPoint.base_price;
@@ -88,14 +88,14 @@ export default class Points extends Observer {
       "date_to": end,
       "destination": {
         "name": destination.city,
-        "description": destination.description.join(),
+        "description": destination.descriptions.join(),
         "pictures": destination.photos,
       },
       "base_price": cost,
       "is_favorite": isFavorite,
-      "offers": offers.title.map((i, ind) => ({
+      "offers": offers.titles.map((i, ind) => ({
         "title": i,
-        "price": offers.price[ind]
+        "price": offers.prices[ind]
       }))
     };
   }

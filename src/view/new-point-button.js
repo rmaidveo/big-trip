@@ -1,10 +1,10 @@
 import Abstract from "./abstract.js";
 
-const createNewTripButtonTemplate = () => {
+const createNewPointButtonTemplate = () => {
   return `<button class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button">New event</button>`;
 };
-export default class NewTripButton extends Abstract {
+export default class NewPointButton extends Abstract {
   getTemplate() {
-    return createNewTripButtonTemplate();
+    return createNewPointButtonTemplate();
   }
 }

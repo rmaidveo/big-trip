@@ -1,25 +1,25 @@
 import dayjs from "dayjs";
 import Abstract from "./abstract.js";
 import {getAllCost, generateDuration} from "../utils/trip.js";
-import {TIME_IN_MIN, BLANK_TRIP} from "../constants.js";
+import {TimeFormat, BLANK_TRIP} from "../constants.js";
 
 const appendZero = (value) => String(value).padStart(2, `0`);
 
 const createDuration = (duration) => {
   let durationString = ``;
   let minutes = duration;
-  let hours = minutes / TIME_IN_MIN.HOUR;
-  let days = hours / TIME_IN_MIN.DAY;
-  days = appendZero(Math.floor(hours / TIME_IN_MIN.DAY));
-  hours = appendZero(Math.round(hours % TIME_IN_MIN.DAY));
-  minutes = appendZero(Math.round(minutes % TIME_IN_MIN.HOUR));
-  if (duration >= TIME_IN_MIN.MAXMIN) {
+  let hours = minutes / TimeFormat.HOUR;
+  let days = hours / TimeFormat.DAY;
+  days = appendZero(Math.floor(hours / TimeFormat.DAY));
+  hours = appendZero(Math.round(hours % TimeFormat.DAY));
+  minutes = appendZero(Math.round(minutes % TimeFormat.HOUR));
+  if (duration >= TimeFormat.MAXMIN) {
     durationString = `${days}D ${hours}H ${minutes}M`;
   }
-  if (duration < TIME_IN_MIN.MAXMIN) {
+  if (duration < TimeFormat.MAXMIN) {
     durationString = `${hours}H ${minutes}M`;
   }
-  if (duration < TIME_IN_MIN.HOUR) {
+  if (duration < TimeFormat.HOUR) {
     durationString = `${minutes}M`;
   }
   return durationString;
@@ -27,12 +27,12 @@ const createDuration = (duration) => {
 
 const createOffers = (offers) => {
   let listOfOffers = ``;
-  if (offers.title.length > 0) {
-    for (let i = 0; i < offers.title.length; i++) {
-      if (!listOfOffers.includes(offers.title[i])) {
+  if (offers.titles.length > 0) {
+    for (let i = 0; i < offers.titles.length; i++) {
+      if (!listOfOffers.includes(offers.titles[i])) {
         listOfOffers += `<li class="event__offer">
-  <span class="event__offer-title">${offers.title[i]}</span>
-    &plus;&euro;&nbsp;<span class="event__offer-price">${offers.price[i]}</span>
+  <span class="event__offer-title">${offers.titles[i]}</span>
+    &plus;&euro;&nbsp;<span class="event__offer-price">${offers.prices[i]}</span>
   </li> `;
       }
     }

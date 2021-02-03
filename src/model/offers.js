@@ -16,8 +16,8 @@ export default class Offers {
     return {
       type: data.type,
       offers: {
-        title: data.offers.map((ar) => ar.title),
-        price: data.offers.map((ar) => ar.price)
+        titles: data.offers.map((ar) => ar.title),
+        prices: data.offers.map((ar) => ar.price)
       }
     };
   }

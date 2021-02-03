@@ -11,10 +11,10 @@ export default class Filter {
     this._currentFilter = null;
     this._filterComponent = null;
     this._eventsExistId = {};
-    this._handleModelEvent = this._handleModelEvent.bind(this);
+    this._onModelEventChange = this._onModelEventChange.bind(this);
     this._onFilterTypeChange = this._onFilterTypeChange.bind(this);
-    this._tripsModel.addObserver(this._handleModelEvent);
-    this._filterModel.addObserver(this._handleModelEvent);
+    this._tripsModel.addObserver(this._onModelEventChange);
+    this._filterModel.addObserver(this._onModelEventChange);
   }
 
   init() {
@@ -37,7 +37,7 @@ export default class Filter {
     remove(prevFilterComponent);
   }
 
-  _handleModelEvent() {
+  _onModelEventChange() {
     this.init();
   }
 
