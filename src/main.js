@@ -82,7 +82,9 @@ Promise.all([apiWithProvider.getPoints(), apiWithProvider.getOffers(), apiWithPr
     evt.preventDefault();
     if (!isOnline()) {
       toast(`You can't create new point offline`);
-    } else{tripPresenter.createPoint();}
+    } else {
+      tripPresenter.createPoint();
+    }
   });
 })
 .catch(() => {

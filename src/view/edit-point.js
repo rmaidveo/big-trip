@@ -68,7 +68,7 @@ export const renderOffersInTrip = (offers, selectedOffers, isDisabled) => {
 };
 
 export const renderPhotos = (photos) => {
-  let photoTemplate = photos.map((photo) =>
+  const photoTemplate = photos.map((photo) =>
     `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`).join(``);
   if (photos.length > 0) {
     return `<div class="event__photos-container">
@@ -116,7 +116,7 @@ const createFormEditPointOfTripTemplate = (trip, destinationList, offersTypeList
     isSaving,
     isDeleting
   } = trip;
-  let {city, descriptions, photos} = destination;
+  const {city, descriptions, photos} = destination;
   const optionsList = destinationList.map((i) =>{
     return Object.values(i)[0];
   });
@@ -260,7 +260,7 @@ export default class EditPoint extends SmartView {
     if (evt.target.tagName !== `INPUT`) {
       return;
     }
-    let checkedOffers = this.getElement().querySelectorAll(`input.event__offer-checkbox:checked`);
+    const checkedOffers = this.getElement().querySelectorAll(`input.event__offer-checkbox:checked`);
     const checkedOffersTitle = Array.from(checkedOffers).map((checkedOffer) => checkedOffer.dataset.offerName);
     const checkedOffersPrice = Array.from(checkedOffers).map((checkedOffer) => Number(checkedOffer.dataset.offerPrice));
     this.updateData({offers: {
